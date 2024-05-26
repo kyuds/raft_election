@@ -1,4 +1,9 @@
 add_executable(
-    test
-    test.cc
+    client
+    client.cc
+)
+
+add_executable(
+    server
+    server.cc
 )

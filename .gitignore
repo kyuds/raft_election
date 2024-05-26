@@ -46,3 +46,9 @@ _deps
 
 bin/
 lib/
+
+# vscode
+.vscode/
+
+# gRPC
+generated/
