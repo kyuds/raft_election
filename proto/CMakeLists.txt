@@ -26,8 +26,6 @@ target_include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-set(PROTO_GEN_DIR "${CMAKE_SOURCE_DIR}/build/generated")
-
 file(MAKE_DIRECTORY ${PROTO_GEN_DIR})
 
 protobuf_generate(
@@ -39,21 +37,21 @@ protobuf_generate(
         "${PROTO_GEN_DIR}"
 )
 
-# get_target_property(
-#     grpc_cpp_plugin_location
-#     gRPC::grpc_cpp_plugin LOCATION
-# )
+get_target_property(
+    grpc_cpp_plugin_location
+    gRPC::grpc_cpp_plugin LOCATION
+)
 
-# protobuf_generate(
-#     TARGET
-#         proto_code
-#     LANGUAGE
-#         grpc
-#     GENERATE_EXTENSIONS
-#         .grpc.pb.h
-#         .grpc.pb.cc
-#     PLUGIN 
-#         "protoc-gen-grpc=${grpc_cpp_plugin_location}"
-#     PROTOC_OUT_DIR
-#         "${CMAKE_SOURCE_DIR}/src/generated"
-# )
+protobuf_generate(
+    TARGET
+        proto_code
+    LANGUAGE
+        grpc
+    GENERATE_EXTENSIONS
+        .grpc.pb.h
+        .grpc.pb.cc
+    PLUGIN 
+        "protoc-gen-grpc=${grpc_cpp_plugin_location}"
+    PROTOC_OUT_DIR
+        "${PROTO_GEN_DIR}"
+)
