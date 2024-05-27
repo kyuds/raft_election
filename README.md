@@ -8,7 +8,12 @@ cd raft && ./install.sh
 ```
 
 ### Installing gRPC
-This project uses gRPC to communicate messages between each node. In order to install gRPC, refer to this [link](https://grpc.io/docs/languages/cpp/quickstart/).
+This project uses gRPC to communicate messages between each node. In order to install gRPC, refer to this [link](https://grpc.io/docs/languages/cpp/quickstart/). The build involves a `CMAKE_PREFIX_PATH`, meaning that it is necessary to set an environment variable to point to the path in which gRPC is installed (if there is a better way, please let us know).
+
+```
+# in ~/.zprofile (or linux/windows equivalent)
+export GRPC_CPP_INSTALL="~/grpc/install"
+```
 
 ## Development Plan
 - [ ] v1: std:string based log replication, fixed quorum
