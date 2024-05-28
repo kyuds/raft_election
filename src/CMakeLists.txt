@@ -12,10 +12,6 @@ target_include_directories(client PUBLIC
 
 target_link_libraries(client
     grpc_proto
-#    ${_GRPC_GRPC}
-#    ${_GRPC_GRPCPP}
-#    ${_GRPC_REFLECTION}
-#    ${_PROTOBUF_LIBPROTOBUF}
 )
 
 add_executable(
@@ -29,8 +25,4 @@ target_include_directories(server PUBLIC
 
 target_link_libraries(server
     grpc_proto
-#    ${_GRPC_GRPC}
-#    ${_GRPC_GRPCPP}
-#    ${_GRPC_REFLECTION}
-#    ${_PROTOBUF_LIBPROTOBUF}
 )
