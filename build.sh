@@ -15,7 +15,7 @@ elif [ ! -d "build" ]; then
     echo "creating 'build' directory."
     mkdir build
 else
-    echo "'build' directory found."
+    echo "existing 'build' directory found."
 fi
 
 cd build

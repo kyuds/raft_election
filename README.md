@@ -1,10 +1,10 @@
 # raft
-[WIP] [Raft](https://raft.github.io/raft.pdf) Distributed Consensus
+[WIP] [Raft](https://raft.github.io/raft.pdf) Distributed Consensus in C++
 
 ## Installation
 ```
 git clone https://github.com/kyuds/raft.git
-cd raft && ./install.sh
+cd raft && ./build.sh
 ```
 
 ### Installing gRPC
@@ -12,7 +12,7 @@ This project uses gRPC to communicate messages between each node. In order to in
 
 ```
 # in ~/.zprofile (or linux/windows equivalent)
-export GRPC_CPP_INSTALL="~/grpc/install"
+export GRPC_CPP_INSTALL=<path to installed grpc directory>
 ```
 
 ## Development Plan
