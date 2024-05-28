@@ -55,10 +55,6 @@ foreach(_proto_service ${PROTO_SERVICES})
     )
 endforeach()
 
-foreach(_generated_files IN LISTS PROTO_GEN_FILES)
-    message(STATUS "Created: ${_generated_files}")
-endforeach()
-
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 add_library(grpc_proto
