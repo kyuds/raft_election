@@ -16,6 +16,7 @@ export GRPC_CPP_INSTALL=<path to installed grpc directory>
 ```
 
 ## Development Plan
+- [ ] v0: leader election mechanism (no SMR)
 - [ ] v1: std:string based log replication, fixed quorum
 - [ ] v2: single value state machine replication
 - [ ] v3: changing quorum, single value smr
