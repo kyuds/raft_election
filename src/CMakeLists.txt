@@ -3,16 +3,27 @@ include(cmake/proto.cmake)
 
 add_executable(raft
     service.cc
-    raft.hh
+    raft.h
     raft.cc
-    config.hh
+    config.h
     config.cc
+    utils.h
+    utils.cc
 )
 
 target_include_directories(raft PUBLIC
     "${CMAKE_CURRENT_BINARY_DIR}"
 )
 
+# include json parser for configuration
+include(FetchContent)
+
+FetchContent_Declare(json URL ${JSON_LIB})
+FetchContent_MakeAvailable(json)
+
 target_link_libraries(raft
-    grpc_proto
+    PUBLIC
+        grpc_proto
+    PRIVATE
+        ${JSON_LIB_LINK}
 )

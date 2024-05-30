@@ -1,0 +1,10 @@
+{
+    "durable": {
+        "directory": "raft",
+        "append_node_name": true
+    },
+    "rpc": {
+        "rpc_timeout": 1000,
+        "max_retries": 3
+    }
+}
