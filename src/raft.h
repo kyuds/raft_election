@@ -12,8 +12,8 @@ class Raft {
     public:
         Raft(std::string _name, 
              std::string _address, 
-             std::string conf_file,
-             std::string member_file);
+             const std::string& conf_file,
+             const std::string& member_file);
         ~Raft() {}
 
     private:

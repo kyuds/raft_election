@@ -7,8 +7,8 @@ namespace raft {
 
 Raft::Raft(std::string _name, 
             std::string _address, 
-            std::string conf_file,
-            std::string member_file) {
+            const std::string& conf_file,
+            const std::string& member_file) {
     name = _name;
     address = _address;
     conf = new Config(name, conf_file);

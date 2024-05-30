@@ -24,7 +24,7 @@ namespace raft {
 
 class Config {
     public:
-        Config(const std::string& name, std::string config_file);
+        Config(const std::string& name, const std::string& config_file);
         ~Config() {}
 
         int get_rpc_timeout() { return rpc_timeout; }
