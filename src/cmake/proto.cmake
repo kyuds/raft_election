@@ -8,9 +8,8 @@ find_package(Threads REQUIRED)
 
 # proto files to compile (no extensions)
 set(PROTO_SERVICES
-    test
-    test2
-    # add more proto file names (eg: test.proto -> test)
+    raft
+    # add more proto file names (eg: raft.proto -> raft)
 )
 
 # gRPC configurations
