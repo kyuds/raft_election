@@ -22,10 +22,10 @@ TODO:
 
 namespace raft {
 
-class Config {
+class ConfigParser {
     public:
-        Config(const std::string& name, const std::string& config_file);
-        ~Config() {}
+        ConfigParser(const std::string& name, const std::string& config_file);
+        ~ConfigParser() {}
 
         int get_rpc_timeout() { return rpc_timeout; }
         int get_max_retries() { return max_retries; }

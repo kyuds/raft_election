@@ -8,7 +8,7 @@ using json = nlohmann::json;
 
 namespace raft {
 
-Config::Config(const std::string& name, const std::string& config_file) {
+ConfigParser::ConfigParser(const std::string& name, const std::string& config_file) {
     std::ifstream f(config_file);
     if (!f.is_open()) {
         // (TODO: kyuds) error here.

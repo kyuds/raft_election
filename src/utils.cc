@@ -3,6 +3,8 @@
 #include <fstream>
 #include <filesystem>
 
+namespace raft {
+
 std::string combine_paths(const std::string& p1, const std::string& p2) {
     std::filesystem::path fp1(p1);
     std::filesystem::path fp2(p2);
@@ -25,3 +27,5 @@ std::vector<std::string> file_line_to_vec(const std::string& file) {
 
     return lines;
 }
+
+} // namespace raft

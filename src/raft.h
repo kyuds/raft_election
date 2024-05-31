@@ -5,8 +5,16 @@
 #include <vector>
 
 #include "config.h"
+#include "storage.h"
+#include "rpc.h"
 
 namespace raft {
+
+enum class State {
+    Leader,
+    Follower,
+    Candidate
+};
 
 class Raft {
     public:
@@ -14,32 +22,33 @@ class Raft {
              std::string _address, 
              const std::string& conf_file,
              const std::string& member_file);
-        ~Raft() {}
+        ~Raft();
 
     private:
-        ///////////////////
-        // configuration //
-        ///////////////////
-
-        Config * conf;
-        std::string name;
-        std::string address;
-
-        ///////////////////
-        // raft protocol //
-        ///////////////////
+        //////////////////////
+        //     protocol     //
+        //////////////////////
 
         // persistent state
         int64_t current_term;
         std::string voted_for;
-
+        
         // volatile state
-
-        ///////////////////
-        // grpc protocol //
-        ///////////////////
-
         std::vector<std::string> members;
+
+        //////////////////////
+        // node information //
+        //////////////////////
+
+        std::string name;
+        std::string address;
+
+        //////////////////////
+        //      module      //
+        //////////////////////
+
+        Storage * storage;
+        Rpc * rpc;
 };
 
 } // namespace raft
