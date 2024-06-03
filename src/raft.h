@@ -24,24 +24,25 @@ class Raft {
              const std::string& member_file);
         ~Raft();
 
+        void start();
+        void stop();
+
     private:
         //////////////////////
         //     protocol     //
         //////////////////////
 
+        // node information
+        std::string name;
+        std::string address;
+
         // persistent state
-        int64_t current_term;
+        uint64_t current_term;
         std::string voted_for;
         
         // volatile state
+        State state;
         std::vector<std::string> members;
-
-        //////////////////////
-        // node information //
-        //////////////////////
-
-        std::string name;
-        std::string address;
 
         //////////////////////
         //      module      //
@@ -49,6 +50,10 @@ class Raft {
 
         Storage * storage;
         Rpc * rpc;
+
+        //////////////////////
+        //       task       //
+        //////////////////////
 };
 
 } // namespace raft

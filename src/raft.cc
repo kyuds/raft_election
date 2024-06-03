@@ -12,6 +12,7 @@ Raft::Raft(std::string _name,
     name = _name;
     address = _address;
     members = file_line_to_vec(member_file);
+    state = State::Follower;
 
     // parse from configuration file
     auto * conf = new ConfigParser(name, conf_file);
@@ -26,6 +27,14 @@ Raft::~Raft() {
     // free other variables too
     delete storage;
     delete rpc;
+}
+
+void Raft::start() {
+
+}
+
+void Raft::stop() {
+
 }
 
 } // namespace raft
