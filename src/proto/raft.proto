@@ -1,13 +1,21 @@
 syntax = "proto3";
 
-service Test {
-    rpc SayHello(Request) returns (Response); 
+service RaftRpc {
+    rpc RequestVote(VoteRequest) returns (VoteResponse);
+    // will replace Ping RPC with AppendEntries heartbeat.
+    rpc Ping(Empty) returns (Empty);
 }
 
-message Request {
-    string contents = 1;
+message Empty {}
+
+message VoteRequest {
+    uint64 term = 1;
+    string candidateId = 2;
+    uint64 lastLogIndex = 3; //unused for now
+    uint64 lastLogTerm = 4;
 }
 
-message Response {
-    string contents = 1;
+message VoteResponse {
+    uint64 term = 1;
+    bool voteGranted = 2; 
 }

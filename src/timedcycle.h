@@ -7,6 +7,7 @@
 #include <mutex>
 #include <thread>
 
+// (TODO: kyuds) adapted to use closures.
 // https://github.com/kyuds/timedcycle
 
 namespace raft{
