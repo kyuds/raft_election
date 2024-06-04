@@ -16,9 +16,10 @@ export GRPC_CPP_INSTALL=<path to installed grpc directory>
 ```
 
 ## Development Plan
-- [ ] v0: leader election mechanism (no SMR)
+- [ ] v0: leader election mechanism
 - [ ] v1: std:string based log replication, fixed quorum
 - [ ] v2: single value state machine replication
-- [ ] v3: changing quorum, single value smr
-- [ ] v4: interface for generate state machine
-- [ ] v5: KV store example?
+- [ ] v3: single value SMR + snapshot
+- [ ] v4: changing quorum, single value smr
+- [ ] v5: interface for generate state machine
+- [ ] v6: KV store example?

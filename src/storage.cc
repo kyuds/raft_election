@@ -4,12 +4,13 @@
 
 namespace raft {
 
-Storage::Storage(const std::string& _root) {
-    std::cout << "Built storage on: " << _root << std::endl;
+Storage::Storage(const std::string& _root) : root(_root) {
+    std::cout << "Built storage on: " << root << std::endl;
 }
 
-Storage::~Storage() {
-    
+bool Storage::commit_metadata(uint64_t term, const std::string& voted_for) {
+
+    return true;
 }
 
 } // namespace raft

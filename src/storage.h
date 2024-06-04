@@ -12,7 +12,10 @@ namespace raft {
 class Storage {
     public:
         Storage(const std::string& _root);
-        ~Storage();
+        ~Storage() {}
+
+        bool commit_metadata(uint64_t term, const std::string& voted_for);
+        // bool commit_log(); // (TODO: kyuds) implement
     
     private:
         const std::string root;
