@@ -4,17 +4,12 @@
 #include <string>
 #include <vector>
 
+#include "common.h"
 #include "config.h"
-#include "storage.h"
+#include "durable.h"
 #include "rpc.h"
 
 namespace raft {
-
-enum class State {
-    Leader,
-    Follower,
-    Candidate
-};
 
 class Raft {
     public:
@@ -24,21 +19,30 @@ class Raft {
              const std::string& member_file);
         ~Raft();
 
-        void start();
+        bool start();
         void stop();
 
     private:
+        // functions for callbacks
+
+    private:
+        // helper functions
+        bool save_pstate() { return durable->save_pstate(pstate); }
+        bool load_pstate() { return durable->load_pstate(pstate); }
+
+    private:
+        // member variables
+
         //////////////////////
         //     protocol     //
         //////////////////////
 
         // node information
-        std::string name;
-        std::string address;
+        const std::string name;
+        const std::string address;
 
         // persistent state
-        uint64_t current_term;
-        std::string voted_for;
+        pstate_t pstate;
         
         // volatile state
         State state;
@@ -48,7 +52,7 @@ class Raft {
         //      module      //
         //////////////////////
 
-        Storage * storage;
+        Durable * durable;
         Rpc * rpc;
 
         //////////////////////

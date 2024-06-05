@@ -1,6 +1,6 @@
 {
     "durable": {
-        "directory": "raft",
+        "directory": "tmp",
         "append_node_name": true
     },
     "rpc": {

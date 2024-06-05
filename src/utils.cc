@@ -1,11 +1,17 @@
-#include "utils.h"
-
 #include <fstream>
 #include <filesystem>
+
+#include "utils.h"
 
 namespace raft {
 
 std::string combine_paths(const std::string& p1, const std::string& p2) {
+    std::filesystem::path fp1(p1);
+    std::filesystem::path fp2(p2);
+    return (fp1 / fp2).string();
+}
+
+std::string combine_paths(const std::string& p1, const char * p2) {
     std::filesystem::path fp1(p1);
     std::filesystem::path fp2(p2);
     return (fp1 / fp2).string();

@@ -3,12 +3,13 @@ include(cmake/proto.cmake)
 
 add_executable(raft
     cli.cc
+    common.h
     raft.h
     raft.cc
     rpc.h
     rpc.cc
-    storage.h
-    storage.cc
+    durable.h
+    durable.cc
     config.h
     config.cc
     utils.h

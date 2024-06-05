@@ -11,6 +11,7 @@ int main(void) {
     std::string member_file("members.txt");
     
     Raft * r = new Raft(name, address, conf_file, member_file);
+    r->start();
 
     return 0;
 }
