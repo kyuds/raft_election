@@ -18,7 +18,7 @@ bool Durable::initialize() {
         }
         if (!std::filesystem::exists(pstate_file_path)) {
             std::cout << "Creating missing pstate file." << std::endl;
-            if (!save_pstate(pstate_t {PSTATE_TM_INIT, PSTATE_VF_INIT})) {
+            if (!save_pstate(PSTATE_INIT)) {
                 throw std::runtime_error("Could not create pstate file.");
             }
         }

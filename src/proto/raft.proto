@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package raft;
+
 service RaftRpc {
     rpc RequestVote(VoteRequest) returns (VoteResponse);
     // will replace Ping RPC with AppendEntries heartbeat.

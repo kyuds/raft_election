@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "common.h"
-#include "config.h"
 #include "durable.h"
 #include "rpc.h"
 
@@ -22,13 +21,25 @@ class Raft {
         bool start();
         void stop();
 
+        // const std::string& get_cluster_leader();
     private:
-        // functions for callbacks
+        // functions for repeated tasks
+        // void hold_leader_election();
+        // void heartbeat();
 
+        // functions for RPC callbacks
+        rpc_rv_rep_t process_request_vote(const rpc_rv_req_t& req);
+        request_vote_callback_t process_request_vote_callback;
+        void process_ping();
+        ping_callback_t process_ping_callback;
+    
     private:
         // helper functions
-        bool save_pstate() { return durable->save_pstate(pstate); }
-        bool load_pstate() { return durable->load_pstate(pstate); }
+        bool save_pstate();
+        bool load_pstate();
+        uint64_t current_term();
+        const std::string& voted_for();
+        const pstate_t& get_pstate();
 
     private:
         // member variables
@@ -43,6 +54,10 @@ class Raft {
 
         // persistent state
         pstate_t pstate;
+        std::mutex pstate_m;
+
+        // locks
+        std::mutex node_m;
         
         // volatile state
         State state;
