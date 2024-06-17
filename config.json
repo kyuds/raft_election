@@ -3,8 +3,8 @@
         "directory": "tmp",
         "append_node_name": true
     },
-    "rpc": {
-        "rpc_timeout": 1000,
-        "max_retries": 3
+    "election": {
+        "min_timeout": 150,
+        "max_timeout": 300
     }
 }

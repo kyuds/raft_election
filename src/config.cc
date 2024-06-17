@@ -16,8 +16,8 @@ ConfigParser::ConfigParser(const std::string& name, const std::string& config_fi
 
     json data = json::parse(f);
 
-    rpc_timeout = data["rpc"]["rpc_timeout"];
-    max_retries = data["rpc"]["max_retries"];
+    min_timeout = data["election"]["min_timeout"];
+    max_timeout = data["election"]["max_timeout"];
 
     storage_dir = std::string(data["durable"]["directory"]);
     if (data["durable"]["append_node_name"]) {

@@ -27,8 +27,8 @@ class ConfigParser {
         ConfigParser(const std::string& name, const std::string& config_file);
         ~ConfigParser() {}
 
-        int get_rpc_timeout() { return rpc_timeout; }
-        int get_max_retries() { return max_retries; }
+        int get_min_timeout() { return min_timeout; }
+        int get_max_timeout() { return max_timeout; }
         const std::string& get_storage_dir() { return storage_dir; }
     
     private:
@@ -37,9 +37,9 @@ class ConfigParser {
         // durable
         std::string storage_dir;
 
-        // rpc
-        int rpc_timeout; // milliseconds
-        int max_retries;
+        // election
+        int min_timeout; // milliseconds
+        int max_timeout;
 };
     
 } // namespace raft
