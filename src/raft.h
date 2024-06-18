@@ -1,12 +1,24 @@
 #ifndef RAFT_NODE
 #define RAFT_NODE
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "common.h"
 #include "durable.h"
 #include "rpc.h"
+
+/*
+Operating Assumptions:
+- grpc server is not going to crash
+- background threads are going to operate
+- fail stop model
+
+**  actually don't know how to develop a fail stop
+    model, but this is what the actual raft
+    protocol relies on as well. 
+*/
 
 namespace raft {
 
@@ -16,34 +28,15 @@ class Raft {
              std::string _address, 
              const std::string& conf_file,
              const std::string& member_file);
-        ~Raft();
+        ~Raft() {}
 
         bool start();
         void stop();
 
-        // const std::string& get_cluster_leader();
     private:
-        // functions for repeated tasks
-        // void hold_leader_election();
-        // void heartbeat();
-
-        // functions for RPC callbacks
-        rpc_rv_rep_t process_request_vote(const rpc_rv_req_t& req);
-        request_vote_callback_t process_request_vote_callback;
-        void process_ping();
-        ping_callback_t process_ping_callback;
-    
-    private:
-        // helper functions
-        bool save_pstate();
-        bool load_pstate();
-        uint64_t current_term();
-        const std::string& voted_for();
-        const pstate_t& get_pstate();
+        // functions for Raft operations
 
     private:
-        // member variables
-
         //////////////////////
         //     protocol     //
         //////////////////////
@@ -54,25 +47,32 @@ class Raft {
 
         // persistent state
         pstate_t pstate;
-        std::mutex pstate_m;
 
-        // locks
-        std::mutex node_m;
-        
         // volatile state
         State state;
         std::vector<std::string> members;
 
+        // locks
+        std::mutex node_m;
+        
         //////////////////////
         //      module      //
         //////////////////////
 
-        Durable * durable;
-        Rpc * rpc;
+        std::unique_ptr<Durable> durable;
+        std::unique_ptr<Rpc> rpc;
 
         //////////////////////
         //       task       //
         //////////////////////
+    
+    private:
+        // trivial helper functions
+        bool save_pstate() { return durable->save_pstate(pstate); }
+        bool load_pstate() { return durable->load_pstate(pstate); }
+        uint64_t current_term() { return pstate.term; }
+        const std::string& voted_for() { return pstate.voted_for; }
+        const pstate_t& get_pstate() { return pstate; }
 };
 
 } // namespace raft

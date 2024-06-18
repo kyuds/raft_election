@@ -4,6 +4,7 @@
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <functional>
 #include <mutex>
 #include <thread>
 
@@ -11,13 +12,12 @@
 // https://github.com/kyuds/timedcycle
 
 namespace raft{
-
+    
 class TimedCycle {
     public:
-        TimedCycle(int _interval);
-        virtual ~TimedCycle();
+        TimedCycle(int _interval, std::function<void()> _task);
+        ~TimedCycle();
 
-        virtual void task() = 0;
         void reset();
     
     private:
@@ -29,6 +29,7 @@ class TimedCycle {
         std::mutex cv_m;
         std::condition_variable cv_c;
         std::atomic<bool> alive;
+        std::function<void()> task;
 };
 
 } // namespace raft

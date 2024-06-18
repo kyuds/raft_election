@@ -24,22 +24,11 @@ typedef struct {
     std::string voted_for;
 } pstate_t;
 
-// custom structs to encapsulate RPC formats. 
-typedef struct {
-    uint64_t term;
-    std::string candidate_id;
-    uint64_t last_log_index;
-    uint64_t last_log_term;
-} rpc_rv_req_t;
+typedef std::function<void(uint64_t, bool)> rv_clbk_t;
+typedef std::function<void(uint64_t, bool)> ae_clbk_t;
 
-typedef struct {
-    uint64_t term;
-    bool vote_granted;
-} rpc_rv_rep_t;
-
-// typedefs for closure callbacks
-typedef std::function<rpc_rv_rep_t(const rpc_rv_req_t&)> request_vote_callback_t;
-typedef std::function<void()> ping_callback_t;
+typedef std::function<void(uint64_t, const std::string&)> rv_service_clbk_t;
+typedef std::function<void(uint64_t, const std::string&)> ae_service_clbk_t;
 
 } // namespace raft
 

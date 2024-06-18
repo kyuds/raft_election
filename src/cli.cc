@@ -4,7 +4,7 @@
 
 using Raft = raft::Raft;
 
-int main(void) {
+void raft_cli(void) {
     std::string name("node1");
     std::string address("localhost:10001");
     std::string conf_file("config.json");
@@ -12,6 +12,13 @@ int main(void) {
     
     Raft * r = new Raft(name, address, conf_file, member_file);
     r->start();
+}
 
+void rpc_cli_mutual(void) {
+
+}
+
+int main(void) {
+    raft_cli();
     return 0;
 }
