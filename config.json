@@ -6,5 +6,8 @@
     "election": {
         "min_timeout": 150,
         "max_timeout": 300
+    },
+    "rpc": {
+        "timeout": 200
     }
 }
