@@ -28,7 +28,7 @@ class Rpc {
         ~Rpc();
 
         // call gRPC server
-        bool start(rv_service_clbk_t rv_cb, ae_service_clbk_t ae_cb);
+        void start(rv_service_clbk_t rv_cb, ae_service_clbk_t ae_cb);
         // deletes all stubs (when node converts to follower).
         void clear(); 
 

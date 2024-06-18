@@ -10,13 +10,12 @@ Rpc::~Rpc() {
     delete service;
 }
 
-bool Rpc::start(rv_service_clbk_t rv_cb, ae_service_clbk_t ae_cb) {
+void Rpc::start(rv_service_clbk_t rv_cb, ae_service_clbk_t ae_cb) {
     ServerBuilder builder;
     builder.AddListeningPort(address, grpc::InsecureServerCredentials());
     service = new ServerImpl(std::move(rv_cb), std::move(ae_cb));
     builder.RegisterService(service);
     server = builder.BuildAndStart();
-    return true;
 }
 
 void Rpc::clear() {
@@ -47,7 +46,10 @@ void Rpc::append_entries(const std::string& peer,
 ServerUnaryReactor* Rpc::ServerImpl::RequestVote(CallbackServerContext* context,
                                                 const VoteRequest* request,
                                                 VoteReply* reply) {
-    rv_clbk(request->term(), request->candidateid());
+
+    rpc_rep_t rep = rv_clbk(request->term(), request->candidateid());
+    reply->set_term(rep.term);
+    reply->set_votegranted(rep.success);
     ServerUnaryReactor* reactor = context->DefaultReactor();
     reactor->Finish(Status::OK);
     return reactor;
@@ -57,7 +59,9 @@ ServerUnaryReactor* Rpc::ServerImpl::AppendEntries(CallbackServerContext* contex
                                                     const AppendRequest* request,
                                                     AppendReply* reply) {
     
-    ae_clbk(request->term(), request->leaderid());
+    rpc_rep_t rep = ae_clbk(request->term(), request->leaderid());
+    reply->set_term(rep.term);
+    reply->set_success(rep.success);
     ServerUnaryReactor* reactor = context->DefaultReactor();
     reactor->Finish(Status::OK);
     return reactor;
@@ -65,10 +69,16 @@ ServerUnaryReactor* Rpc::ServerImpl::AppendEntries(CallbackServerContext* contex
 
 std::unique_ptr<RaftRpc::Stub> Rpc::get_stub(const std::string& address) {
     std::lock_guard<std::mutex> lock(channel_m);
-    if (!channels.contains(address)) 
-        channels[std::string(address)] = grpc::CreateChannel(
-            address, grpc::InsecureChannelCredentials());
-    return RaftRpc::RaftRpc::NewStub(channels.find(address)->second);
+    if (!channels.contains(address)) {
+        grpc::ChannelArguments args;
+        args.SetInt(GRPC_ARG_MAX_RECONNECT_BACKOFF_MS, 10000);
+        args.SetInt(GRPC_ARG_INITIAL_RECONNECT_BACKOFF_MS, 500);
+        args.SetInt(GRPC_ARG_MIN_RECONNECT_BACKOFF_MS , 500);
+        channels[std::string(address)] = grpc::CreateCustomChannel(
+            address, grpc::InsecureChannelCredentials(), args);
+    }
+    auto channel = channels.find(address)->second;
+    return RaftRpc::RaftRpc::NewStub(channel);
 }
 
 // helper function for rpc timeouts
@@ -81,9 +91,8 @@ void Rpc::ClientImpl::RequestVote(VoteRequest r, rv_clbk_t cb) {
     ctx.set_deadline(create_deadline(timeout));
     stub->async()->RequestVote(&ctx, &r, &vr,
         [this, cb = std::move(cb)](Status status) {
-            if (status.ok()) {
+            if (status.ok()) 
                 cb(vr.term(), vr.votegranted());
-            }
             delete this;
         });
 }
@@ -92,9 +101,8 @@ void Rpc::ClientImpl::AppendEntries(AppendRequest r, ae_clbk_t cb) {
     ctx.set_deadline(create_deadline(timeout));
     stub->async()->AppendEntries(&ctx, &r, &ar,
         [this, cb = std::move(cb)](Status status) {
-            if (status.ok()) {
+            if (status.ok()) 
                 cb(ar.term(), ar.success());
-            }
             delete this;
         });
 }

@@ -27,8 +27,13 @@ typedef struct {
 typedef std::function<void(uint64_t, bool)> rv_clbk_t;
 typedef std::function<void(uint64_t, bool)> ae_clbk_t;
 
-typedef std::function<void(uint64_t, const std::string&)> rv_service_clbk_t;
-typedef std::function<void(uint64_t, const std::string&)> ae_service_clbk_t;
+typedef struct {
+    uint64_t term;
+    bool success;
+} rpc_rep_t;
+
+typedef std::function<rpc_rep_t(uint64_t, const std::string&)> rv_service_clbk_t;
+typedef std::function<rpc_rep_t(uint64_t, const std::string&)> ae_service_clbk_t;
 
 } // namespace raft
 
