@@ -3,13 +3,12 @@ include(cmake/proto.cmake)
 
 add_executable(raft
     cli.cc
-    common.h
     raft.h
     raft.cc
     rpc.h
     rpc.cc
-    durable.h
-    durable.cc
+    state.h
+    state.cc
     config.h
     config.cc
     utils.h
@@ -23,10 +22,13 @@ target_include_directories(raft PUBLIC
 # include json parser for ConfigParser
 FetchContent_Declare(json URL ${JSON_LIB})
 FetchContent_MakeAvailable(json)
+FetchContent_Declare(plog URL ${PLOG_LIB})
+FetchContent_MakeAvailable(plog)
 
 target_link_libraries(raft
     PUBLIC
         grpc_proto
     PRIVATE
         ${JSON_LIB_LINK}
+        plog
 )
