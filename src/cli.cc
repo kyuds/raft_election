@@ -4,19 +4,28 @@
 #include <thread>
 #include <chrono>
 
-#include "common.h"
+#include "config.h"
 #include "raft.h"
 #include "rpc.h"
+
+#include <plog/Log.h>
+#include "plog/Initializers/RollingFileInitializer.h"
 
 using Raft = raft::Raft;
 using Rpc = raft::Rpc;
 using rpc_rep_t = raft::rpc_rep_t;
+using Config = raft::Config;
+using State = raft::State;
 
+void config_parse();
+void state_test();
 void raft_cli();
 void rpc_cli_mutual(int argc, char ** argv);
 
 int main(int argc, char ** argv) {
-    rpc_cli_mutual(argc, argv);
+    // rpc_cli_mutual(argc, argv);
+    plog::init(plog::debug, "Hello.txt");
+    state_test();
     return 0;
 }
 
@@ -84,4 +93,18 @@ void rpc_cli_mutual(int argc, char ** argv) {
         r->call_rv(addr2);
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
+}
+
+void config_parse() {
+    // auto c = new Config("node", "ip", "config.json");
+    auto c = Config::default_config("node", "ip");
+    std::cout << c->get_storage_dir() << std::endl;
+    std::cout << c->get_peer_file() << std::endl;
+    std::cout << c->get_heartbeat() << std::endl;
+}
+
+void state_test() {
+    auto s = new State("tmp");
+    std::cout << s->initialize() << std::endl;
+    std::cout << s->term() << " <" << s->voted_for() << ">" << std::endl;
 }

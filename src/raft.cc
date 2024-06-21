@@ -1,8 +1,13 @@
-#include <iostream>
+#include <plog/Log.h>
+#include "plog/Initializers/RollingFileInitializer.h"
 
 #include "raft.h"
-#include "config.h"
 #include "utils.h"
+
+// (TODO)
+// figure out how to put define flags into CMake
+// so ideally, we will compile with -DRAFT_DEBUG
+#define RAFT_DEBUG
 
 namespace raft {
 
@@ -12,18 +17,24 @@ Raft::Raft(std::string _name,
            const std::string& member_file)
     : name(_name),
       address(_address) {
-    members = file_line_to_vec(member_file);
-    state = State::Follower;
+    // need to change name.
+    #ifdef RAFT_DEBUG
+    plog::init(plog::debug, "Hello.txt");
+    #else
+    plog::init(plog::info, "Hello.txt");
+    #endif
+    // members = file_line_to_vec(member_file);
+    // status = Status::Follower;
 
-    // parse from configuration file
-    auto * conf = new ConfigParser(name, conf_file);
-    durable = std::make_unique<Durable>(conf->get_storage_dir());
-    // rpc = new Rpc(address,
-    //               conf->get_rpc_timeout(),
-    //               conf->get_max_retries());
-    delete conf;
+    // // parse from configuration file
+    // auto * conf = new ConfigParser(name, conf_file);
+    // durable = std::make_unique<Durable>(conf->get_storage_dir());
+    // // rpc = new Rpc(address,
+    // //               conf->get_rpc_timeout(),
+    // //               conf->get_max_retries());
+    // delete conf;
 
-    // create callback variables.
+    // // create callback variables.
 }
 
 // For each module, there is a separate constructor and a separate
@@ -34,14 +45,7 @@ Raft::Raft(std::string _name,
 // properly. This is a design choice made because returning success
 // indicators from consturctors is rather complicated.
 bool Raft::start() {
-    bool s = true;
-    s &= durable->initialize();
-    s &= load_pstate();
-
-    std::cout << "Success: " << s << std::endl;
-    std::cout << current_term() << " <" << voted_for() << ">" << std::endl;
-
-    return s;
+    return true;
 }
 
 void Raft::stop() {

@@ -1,32 +1,34 @@
 #include <filesystem>
 #include <fstream>
-#include <iostream>
+#include <plog/Log.h>
 
-#include "durable.h"
+#include "state.h"
 #include "utils.h"
-
-// (TODO: kyuds) create logging module for errors. 
 
 namespace raft {
 
-bool Durable::initialize() {
+bool State::initialize() {
     try {
         if (std::filesystem::create_directories(root)) {
-            std::cout << "Created directory " << root << std::endl;
+            PLOGI << "Created directory: " << root;
         } else {
-            std::cout << "Using preexisting directory " << root << std::endl;
+            PLOGI << "Using preexisting directory: " << root;
         }
         if (!std::filesystem::exists(pstate_file_path)) {
-            std::cout << "Creating missing pstate file." << std::endl;
-            if (!save_pstate(PSTATE_INIT)) {
+            PLOGI << "Creating missing pstate file.";
+            set_term(0);
+            set_voted_for(std::string(""));
+            if (!save_pstate()) {
                 throw std::runtime_error("Could not create pstate file.");
             }
+        } else {
+            return load_pstate();
         }
         return true;
     } catch (const std::filesystem::filesystem_error& e) {
-        std::cout << "filesystem gg" << std::endl;
+        PLOGE << "There was an error with a filesystem operation " << e.what();
     } catch (const std::runtime_error& e) {
-        std::cout << "pstate file gg" << std::endl;
+        PLOGE << "There was an error with saving the state " << e.what();
     }
     return false;
 }
@@ -38,41 +40,47 @@ bool Durable::initialize() {
 // file contents:
 // 0                --> 1st line
 // localhost::10001 --> 2nd line (empty if null)
-bool Durable::save_pstate(const pstate_t& pstate) {
+bool State::save_pstate() {
     std::ofstream file(pstate_file_path);
     if (!file) {
+        PLOGF << "Couldn't find a pstate file";
         return false;
     }
-    file << pstate.term << "\n" << pstate.voted_for << "\n";
+    file << _term << "\n" << _voted_for << "\n";
     file.flush();
     file.close();
+    PLOGI << "Commited pstate: " << _term << " " << _voted_for;
     return true;
 }
 
-bool Durable::load_pstate(pstate_t& pstate) {
+bool State::load_pstate() {
     std::ifstream file(pstate_file_path);
     std::string line;
     bool success = true;
     if (!file.is_open()) return false;
     if (std::getline(file, line)) {
         try {
-            pstate.term = std::stoull(line);
+            // TODO: this will convert negative numbers.
+            _term = std::stoull(line);
         } catch (const std::invalid_argument& e) {
-            std::cerr << "Invalid argument: " << e.what() << '\n';
+            PLOGE << "Invalid argument: " << e.what();
             success = false;
         } catch (const std::out_of_range& e) {
-            std::cerr << "Out of range: " << e.what() << '\n';
+            PLOGE << "Out of range: " << e.what();
             success = false;
         }
         if (std::getline(file, line)) {
-            pstate.voted_for = line;
+            _voted_for = line;
         } else {
+            PLOGE << "Couldn't find 'voted_for' in state file";
             success = false;
         }
     } else {
+        PLOGE << "Empty state file";
         success = false;
     }
     file.close();
+    PLOGI << "Loaded pstate: " << _term << " " << _voted_for;
     return success;
 }
 

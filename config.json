@@ -1,5 +1,5 @@
 {
-    "durable": {
+    "storage": {
         "directory": "tmp",
         "append_node_name": true
     },
@@ -9,5 +9,9 @@
     },
     "rpc": {
         "timeout": 200
+    },
+    "peer": {
+        "config": "peer.txt",
+        "heartbeat": 20
     }
 }

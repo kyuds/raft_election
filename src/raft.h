@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include "common.h"
-#include "durable.h"
+#include "config.h"
+#include "state.h"
 #include "rpc.h"
 
 /*
@@ -22,12 +22,23 @@ Operating Assumptions:
 
 namespace raft {
 
+// raft node status.
+enum class Status {
+    Follower,
+    Candidate,
+    Leader
+};
+
 class Raft {
     public:
         Raft(std::string _name, 
              std::string _address, 
              const std::string& conf_file,
              const std::string& member_file);
+        // TODO: implement
+        Raft(Config * conf) {}
+        Raft(const std::string& name, const std::string address)
+            : Raft(Config::default_config(name, address)) {}
         ~Raft() {}
 
         bool start();
@@ -41,38 +52,29 @@ class Raft {
         //     protocol     //
         //////////////////////
 
-        // node information
         const std::string name;
         const std::string address;
 
-        // persistent state
-        pstate_t pstate;
+        Status status;
+        std::unique_ptr<State> state;
+        std::vector<std::string> peers;
 
-        // volatile state
-        State state;
-        std::vector<std::string> members;
-
-        // locks
         std::mutex node_m;
         
         //////////////////////
-        //      module      //
+        //       comm       //
         //////////////////////
 
-        std::unique_ptr<Durable> durable;
         std::unique_ptr<Rpc> rpc;
 
         //////////////////////
         //       task       //
         //////////////////////
-    
-    private:
-        // trivial helper functions
-        bool save_pstate() { return durable->save_pstate(pstate); }
-        bool load_pstate() { return durable->load_pstate(pstate); }
-        uint64_t current_term() { return pstate.term; }
-        const std::string& voted_for() { return pstate.voted_for; }
-        const pstate_t& get_pstate() { return pstate; }
+
+        // const int min_election_timeout;
+        // const int max_election_timeout;
+        // const int heartbeat;
+
 };
 
 } // namespace raft
