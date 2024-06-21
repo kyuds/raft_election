@@ -11,8 +11,8 @@ namespace raft {
 class State {
     public:
         State(const std::string& _root)
-            : root(_root),
-              pstate_file_path(combine_paths(_root, PSTATE_FILE)) {}
+            : root(_root)
+            , pstate_file_path(combine_paths(_root, PSTATE_FILE)) {}
         ~State() {}
 
         // setup

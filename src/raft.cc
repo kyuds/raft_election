@@ -20,9 +20,9 @@ Raft::Raft(Config * conf)
     , heartbeat(conf->get_heartbeat()) {
     
     #ifdef RAFT_DEBUG
-    plog::init(plog::debug, combine_paths(conf->get_storage_dir(), "log.txt"));
+    plog::init(plog::debug, combine_paths(conf->get_storage_dir(), "log.txt").c_str());
     #else
-    plog::init(plog::info, combine_paths(conf->get_storage_dir(), "log.txt"));
+    plog::init(plog::info, combine_paths(conf->get_storage_dir(), "log.txt").c_str());
     #endif
 
     state = std::make_unique<State>(conf->get_storage_dir());

@@ -40,8 +40,8 @@ void raft_cli() {
     std::string conf_file("config.json");
     std::string member_file("members.txt");
     
-    Raft * r = new Raft(name, address, conf_file, member_file);
-    r->start();
+    // Raft * r = new Raft(name, address, conf_file, member_file);
+    // r->start();
 }
 
 class RpcWrapper {

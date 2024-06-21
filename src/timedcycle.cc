@@ -3,8 +3,8 @@
 namespace raft {
 
 TimedCycle::TimedCycle(int _interval, std::function<void()> _task)
-    : interval(std::chrono::milliseconds(_interval)),
-      task(_task) {
+    : interval(std::chrono::milliseconds(_interval))
+    , task(_task) {
     alive.store(true, std::memory_order_relaxed);
     worker = std::thread(TimedCycle::thread_func, this);
 }
