@@ -31,15 +31,10 @@ enum class Status {
 
 class Raft {
     public:
-        Raft(std::string _name, 
-             std::string _address, 
-             const std::string& conf_file,
-             const std::string& member_file);
-        // TODO: implement
-        Raft(Config * conf) {}
+        Raft(Config * conf);
         Raft(const std::string& name, const std::string address)
             : Raft(Config::default_config(name, address)) {}
-        ~Raft() {}
+        ~Raft() { stop(); }
 
         bool start();
         void stop();
@@ -71,9 +66,9 @@ class Raft {
         //       task       //
         //////////////////////
 
-        // const int min_election_timeout;
-        // const int max_election_timeout;
-        // const int heartbeat;
+        const int min_election_timeout;
+        const int max_election_timeout;
+        const int heartbeat;
 
 };
 

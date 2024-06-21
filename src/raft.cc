@@ -11,30 +11,23 @@
 
 namespace raft {
 
-Raft::Raft(std::string _name, 
-           std::string _address, 
-           const std::string& conf_file,
-           const std::string& member_file)
-    : name(_name),
-      address(_address) {
-    // need to change name.
+Raft::Raft(Config * conf) 
+    : name(conf->get_name())
+    , address(conf->get_address())
+    , status(Status::Follower)
+    , min_election_timeout(conf->get_min_timeout())
+    , max_election_timeout(conf->get_max_timeout())
+    , heartbeat(conf->get_heartbeat()) {
+    
     #ifdef RAFT_DEBUG
-    plog::init(plog::debug, "Hello.txt");
+    plog::init(plog::debug, combine_paths(conf->get_storage_dir(), "log.txt"));
     #else
-    plog::init(plog::info, "Hello.txt");
+    plog::init(plog::info, combine_paths(conf->get_storage_dir(), "log.txt"));
     #endif
-    // members = file_line_to_vec(member_file);
-    // status = Status::Follower;
 
-    // // parse from configuration file
-    // auto * conf = new ConfigParser(name, conf_file);
-    // durable = std::make_unique<Durable>(conf->get_storage_dir());
-    // // rpc = new Rpc(address,
-    // //               conf->get_rpc_timeout(),
-    // //               conf->get_max_retries());
-    // delete conf;
-
-    // // create callback variables.
+    state = std::make_unique<State>(conf->get_storage_dir());
+    rpc = std::make_unique<Rpc>(address, conf->get_rpc_timeout());
+    peers = file_line_to_vec(conf->get_peer_file());
 }
 
 // For each module, there is a separate constructor and a separate
@@ -45,7 +38,12 @@ Raft::Raft(std::string _name,
 // properly. This is a design choice made because returning success
 // indicators from consturctors is rather complicated.
 bool Raft::start() {
-    return true;
+    bool success = true;
+    success &= state->initialize();
+    // success &= rpc->start();
+    // logic to start election timer;
+
+    return success;
 }
 
 void Raft::stop() {

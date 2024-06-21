@@ -1,5 +1,6 @@
 #include <fstream>
 #include <plog/Log.h>
+#include <cstdlib>
 #include <nlohmann/json.hpp>
 
 #include "config.h"
@@ -28,6 +29,7 @@ Config::Config(const std::string& name,
         PLOGI << name << " " << address;
     } catch (const std::exception& e) {
         PLOGE << "Error occurred in parsing config file " << config_file << " " << e.what();
+        exit(0);
     }
 }
 
