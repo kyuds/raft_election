@@ -9,6 +9,8 @@ add_executable(raft
     rpc.cc
     state.h
     state.cc
+    timedcycle.h
+    timedcycle.cc
     config.h
     config.cc
     utils.h

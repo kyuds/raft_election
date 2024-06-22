@@ -33,7 +33,8 @@ typedef std::function<rpc_rep_t(uint64_t, const std::string&)> ae_service_clbk_t
 class Rpc {
     public:
         Rpc(const std::string& node_address, int rpc_timeout)
-            : address(node_address), timeout(rpc_timeout) {}
+            : address(node_address)
+            , timeout(rpc_timeout) {}
         ~Rpc();
 
         // call gRPC server

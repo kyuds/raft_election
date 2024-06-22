@@ -2,9 +2,10 @@
 
 namespace raft {
 
-TimedCycle::TimedCycle(int _interval, std::function<void()> _task)
-    : interval(std::chrono::milliseconds(_interval))
-    , task(_task) {
+TimedCycle::TimedCycle(std::function<std::chrono::milliseconds()> interval, 
+                       std::function<void()> task)
+    : interval(interval)
+    , task(task) {
     alive.store(true, std::memory_order_relaxed);
     worker = std::thread(TimedCycle::thread_func, this);
 }
@@ -13,12 +14,13 @@ TimedCycle::~TimedCycle() {
     alive.store(false, std::memory_order_release);
     reset();
     worker.join();
+
 }
 
 void TimedCycle::thread_func(TimedCycle * t) {
     while (true) {
         std::unique_lock lk(t->cv_m);
-        auto status = t->cv_c.wait_for(lk, t->interval);
+        auto status = t->cv_c.wait_for(lk, t->interval());
         if (t->should_die())
             break;
         if (status == std::cv_status::timeout) {

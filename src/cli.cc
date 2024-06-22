@@ -24,8 +24,9 @@ void rpc_cli_mutual(int argc, char ** argv);
 
 int main(int argc, char ** argv) {
     // rpc_cli_mutual(argc, argv);
-    plog::init(plog::debug, "Hello.txt");
-    state_test();
+    // plog::init(plog::debug, "Hello.txt");
+    // state_test();
+    raft_cli();
     return 0;
 }
 
@@ -35,13 +36,11 @@ int main(int argc, char ** argv) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void raft_cli() {
-    std::string name("node1");
-    std::string address("localhost:10001");
-    std::string conf_file("config.json");
-    std::string member_file("members.txt");
-    
-    // Raft * r = new Raft(name, address, conf_file, member_file);
-    // r->start();
+    Raft * r = new Raft("node1", "localhost:10001");
+    r->start();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    delete r;
+    while (true) {}
 }
 
 class RpcWrapper {

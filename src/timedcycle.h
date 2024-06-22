@@ -15,7 +15,8 @@ namespace raft{
     
 class TimedCycle {
     public:
-        TimedCycle(int _interval, std::function<void()> _task);
+        TimedCycle(std::function<std::chrono::milliseconds()> interval, 
+                   std::function<void()> task);
         ~TimedCycle();
 
         void reset();
@@ -24,7 +25,7 @@ class TimedCycle {
         static void thread_func(TimedCycle * t);
         bool should_die();
 
-        std::chrono::milliseconds interval;
+        std::function<std::chrono::milliseconds()> interval;
         std::thread worker;
         std::mutex cv_m;
         std::condition_variable cv_c;

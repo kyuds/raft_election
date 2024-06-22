@@ -13,7 +13,8 @@ namespace raft {
 Config::Config(const std::string& name,
                const std::string& address,
                const std::string& config_file)
-    : name(name), address(address) {
+    : name(name)
+    , address(address) {
     try {
         std::ifstream f(config_file);
         json data = json::parse(f);
