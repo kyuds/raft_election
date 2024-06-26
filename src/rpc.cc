@@ -71,9 +71,9 @@ std::unique_ptr<RaftRpc::Stub> Rpc::get_stub(const std::string& address) {
     std::lock_guard<std::mutex> lock(channel_m);
     if (!channels.contains(address)) {
         grpc::ChannelArguments args;
-        args.SetInt(GRPC_ARG_MAX_RECONNECT_BACKOFF_MS, 10000);
-        args.SetInt(GRPC_ARG_INITIAL_RECONNECT_BACKOFF_MS, 500);
-        args.SetInt(GRPC_ARG_MIN_RECONNECT_BACKOFF_MS , 500);
+        args.SetInt(GRPC_ARG_MAX_RECONNECT_BACKOFF_MS, 500);
+        args.SetInt(GRPC_ARG_INITIAL_RECONNECT_BACKOFF_MS, 100);
+        args.SetInt(GRPC_ARG_MIN_RECONNECT_BACKOFF_MS , 100);
         channels[std::string(address)] = grpc::CreateCustomChannel(
             address, grpc::InsecureChannelCredentials(), args);
     }
