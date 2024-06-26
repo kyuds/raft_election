@@ -21,12 +21,10 @@ void config_parse();
 void state_test();
 void raft_cli();
 void rpc_cli_mutual(int argc, char ** argv);
+void run_election_cli(int argc, char ** argv);
 
 int main(int argc, char ** argv) {
-    // rpc_cli_mutual(argc, argv);
-    // plog::init(plog::debug, "Hello.txt");
-    // state_test();
-    raft_cli();
+    run_election_cli(argc, argv);
     return 0;
 }
 
@@ -34,6 +32,21 @@ int main(int argc, char ** argv) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+
+void run_election_cli(int argc, char ** argv) {
+    std::cout << "Creating raft node with name <" << argv[1] << "> and address " << argv[2] << std::endl;
+    Raft * r = new Raft(argv[1], argv[2]);
+    r->start();
+
+    std::string current_leader("");
+    raft::Status current_status = raft::Status::Follower;
+    std::cout << "Current leader: " << current_leader << std::endl;
+
+    while (true) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    }
+}
+
 
 void raft_cli() {
     Raft * r = new Raft("node1", "localhost:10001");

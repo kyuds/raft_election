@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <plog/Log.h>
 #include "plog/Initializers/RollingFileInitializer.h"
 
@@ -16,7 +18,8 @@ Raft::Raft(Config * conf)
     , address(conf->get_address())
     , min_election_timeout(conf->get_min_timeout())
     , max_election_timeout(conf->get_max_timeout())
-    , heartbeat(conf->get_heartbeat()) 
+    , heartbeat(conf->get_heartbeat())
+    , batchsize(conf->get_batchsize())
     , generator(std::mt19937(std::random_device()())) {
     
     #ifdef RAFT_DEBUG
@@ -37,10 +40,9 @@ Raft::Raft(Config * conf)
 // any of the modules that were supposed to start didn't start
 // properly. This is a design choice made because returning success
 // indicators from consturctors is rather complicated.
-bool Raft::start() {
-    bool success = true;
+void Raft::start() {
     status = Status::Follower;
-    success &= state->initialize();
+    state->initialize();
     rpc->start(
         [this] (uint64_t term, const std::string& address) {
             return prcs_vote_request(term, address);
@@ -50,7 +52,6 @@ bool Raft::start() {
         }
     );
     start_election_task();
-    return success;
 }
 
 void Raft::stop() {
@@ -59,19 +60,54 @@ void Raft::stop() {
 }
 
 rpc_rep_t Raft::prcs_vote_request(uint64_t term, const std::string& address) {
-    
+    std::lock_guard<std::mutex> lock(node_m);
+    update_term(term);
+
+    bool grant = state->term() == term; // term is updated if smaller
+    grant &= (state->voted_for().empty() || state->voted_for() == address);
+    // grant &= <condition for log at least up to date> (TODO)
+
+    if (grant) {
+        state->set_voted_for(address);
+        state->save_pstate();
+    }
+    return rpc_rep_t {
+        .success = grant,
+        .term = state->term()
+    };
 }
 
 rpc_rep_t Raft::prcs_append_entries(uint64_t term, const std::string& address) {
-    
+    std::lock_guard<std::mutex> lock(node_m);
+    update_term(term);
+    leader = address;
+    // do other logic for later.
+    return rpc_rep_t {
+        .success = true, // ignored
+        .term = state->term()
+    };
 }
 
+// assume that Raft node is locked.
 void Raft::update_term(uint64_t term) {
-
+    if (status != Status::Leader) election_task->reset();
+    if (state->term() < term) {
+        state->set_term(term);
+        state->set_voted_for("");
+        state->save_pstate();
+        if (status == Status::Leader) {
+            stop_heartbeat_task();
+            start_election_task();
+        }
+        status = Status::Follower;
+    }
 }
 
+// assume that Raft node is locked.
 void Raft::become_leader() {
-
+    status = Status::Leader;
+    stop_election_task();
+    start_heartbeat_task();
 }
 
 void Raft::start_election_task() {
@@ -84,14 +120,14 @@ void Raft::start_election_task() {
             },
             [this]() {
                 std::lock_guard<std::mutex> lock(node_m);
-                int votes = 0;
+                votes = 0;
                 for (const auto& peer : peers) {
                     rpc->request_vote(peer, state->term(), address, 
                         [this] (uint64_t term, bool granted) {
                             std::lock_guard<std::mutex> lock(node_m);
                             update_term(term);
-                            if (granted) {
-                                if (++votes >= 3) { // (TODO:) Calculate vote requirements
+                            if (status == Status::Candidate && granted) {
+                                if (++votes >= majority_quorum()) {
                                     become_leader();
                                 }
                             }

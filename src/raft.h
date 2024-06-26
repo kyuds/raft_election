@@ -33,12 +33,13 @@ enum class Status {
 
 class Raft {
     public:
+        // API
         Raft(Config * conf);
         Raft(const std::string& name, const std::string address)
             : Raft(Config::default_config(name, address)) {}
         ~Raft() { stop(); }
 
-        bool start();
+        void start();
         void stop();
 
     private:
@@ -46,7 +47,7 @@ class Raft {
         rpc_rep_t prcs_vote_request(uint64_t term, const std::string& address);
         rpc_rep_t prcs_append_entries(uint64_t term, const std::string& address);
 
-        void update_term(uint64_t term);
+        void update_term(uint64_t term); // true when term updated.
         void become_leader();
 
         void start_election_task();
@@ -84,9 +85,14 @@ class Raft {
 
         const int min_election_timeout;
         const int max_election_timeout;
-        int votes;
         const int heartbeat;
+        const int batchsize;
         std::mt19937 generator;
+    
+    private:
+        // election helpers
+        int votes;
+        int majority_quorum() { return (peers.size() + 1) / 2; }
 };
 
 } // namespace raft
