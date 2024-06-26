@@ -21,11 +21,12 @@ Config::Config(const std::string& name,
 
         storage_dir = std::string(data.value("/storage/directory"_json_pointer, "tmp"));
         append_node_name = data.value("/storage/append_node_name"_json_pointer, false);
-        min_timeout = data.value("/election/min_timeout"_json_pointer, 150);
-        max_timeout = data.value("/election/max_timeout"_json_pointer, 300);
+        min_timeout = data.value("/election/min_timeout"_json_pointer, 200);
+        max_timeout = data.value("/election/max_timeout"_json_pointer, 400);
         rpc_timeout = data.value("/rpc/timeout"_json_pointer, 100);
         peer_file = std::string(data.value("/peer/config"_json_pointer, "peer.txt"));
         heartbeat = data.value("/peer/heartbeat"_json_pointer, 20);
+        batchsize = data.value("/replication/batchsize"_json_pointer, 10);
         PLOGI << "Successfully parsed file: " << config_file;
         PLOGI << name << " " << address;
     } catch (const std::exception& e) {
@@ -85,6 +86,11 @@ Config * Config::set_rpc_timeout(const int t) {
 Config * Config::set_storage_dir(const std::string& d, bool append_name) {
     append_node_name = append_name;
     storage_dir = d;
+    return this;
+}
+
+Config * Config::set_batchsize(const int s) {
+    batchsize = s;
     return this;
 }
 

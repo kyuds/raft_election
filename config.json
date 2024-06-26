@@ -4,14 +4,17 @@
         "append_node_name": true
     },
     "election": {
-        "min_timeout": 150,
-        "max_timeout": 300
+        "min_timeout": 200,
+        "max_timeout": 400
     },
     "rpc": {
-        "timeout": 200
+        "timeout": 100
     },
     "peer": {
         "config": "peer.txt",
         "heartbeat": 20
+    },
+    "replication": {
+        "batchsize": 10
     }
 }

@@ -43,6 +43,7 @@ class Config {
         int get_max_timeout() { return max_timeout; }
         int get_rpc_timeout() { return rpc_timeout; }
         const std::string& get_storage_dir();
+        int get_batchsize() { return batchsize; }
 
         // setters. Returns 'this' to chain functions.
         Config * set_name(const std::string& n);
@@ -53,6 +54,7 @@ class Config {
         Config * set_max_timeout(const int t);
         Config * set_rpc_timeout(const int t);
         Config * set_storage_dir(const std::string& d, bool append_name = false);
+        Config * set_batchsize(const int s);
     
     private:
         // protocol
@@ -71,6 +73,9 @@ class Config {
         // storage
         std::string storage_dir;
         bool append_node_name;
+
+        // replication
+        int batchsize;
 };
     
 } // namespace raft
