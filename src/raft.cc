@@ -9,7 +9,7 @@
 // (TODO)
 // figure out how to put define flags into CMake
 // so ideally, we will compile with -DRAFT_DEBUG
-#define RAFT_DEBUG
+// #define RAFT_DEBUG
 
 namespace raft {
 
@@ -52,6 +52,7 @@ void Raft::start() {
         }
     );
     start_election_task();
+    PLOGI << "Started raft service on " << address << " as " << name << ".";
 }
 
 void Raft::stop() {
@@ -73,6 +74,7 @@ rpc_rep_t Raft::prcs_vote_request(uint64_t term, const std::string& address) {
         state->set_voted_for(address);
         state->save_pstate();
         std::cout << "Granted vote to " << address << " for term " << term << std::endl;
+        PLOGI << "Granted vote to " << address << " for term " << term << ".";
     }
     return rpc_rep_t {
         .success = grant,
@@ -84,7 +86,10 @@ rpc_rep_t Raft::prcs_append_entries(uint64_t term, const std::string& address) {
     std::lock_guard<std::mutex> lock(node_m);
     std::cout << "Received heartbeat from " << address << " for term " << term << std::endl;
     update_term(term);
-    leader = address;
+    if (leader != address) {
+        PLOGI << "Found new leader " << address << ".";
+        leader = address;
+    }
     // do other logic for later.
     return rpc_rep_t {
         .success = true, // ignored
@@ -96,6 +101,9 @@ rpc_rep_t Raft::prcs_append_entries(uint64_t term, const std::string& address) {
 void Raft::update_term(uint64_t term) {
     if (status != Status::Leader) election_task->reset();
     if (state->term() < term) {
+        PLOGI << "Found higher term " << term 
+              << " than current term " << state->term() 
+              << " . Switching to follower.";
         state->set_term(term);
         state->set_voted_for("");
         state->save_pstate();
@@ -113,6 +121,7 @@ void Raft::become_leader() {
     stop_election_task();
     start_heartbeat_task();
     std::cout << "Became leader for term " << state->term() << std::endl;
+    PLOGI << "Became leader for term " << state->term() << ".";
 }
 
 void Raft::start_election_task() {
@@ -130,13 +139,14 @@ void Raft::start_election_task() {
                 state->increment_term();
                 state->set_voted_for(address);
                 state->save_pstate();
+                PLOGI << "Timed out. Starting election for term: " << state->term() << ".";
                 std::cout << "starting election" << std::endl;
                 
                 for (const auto& peer : peers) {
                     if (peer == address)
                         continue;
                     rpc->request_vote(peer, state->term(), address, 
-                        [this] (uint64_t term, bool granted) {
+                        [this, &peer] (uint64_t term, bool granted) {
                             std::lock_guard<std::mutex> lock(node_m);
                             update_term(term);
                             if (status == Status::Candidate && granted) {
@@ -144,12 +154,17 @@ void Raft::start_election_task() {
                                 if (++votes >= majority_quorum()) {
                                     become_leader();
                                 }
+                                PLOGI << "Received vote from " << peer << ".";
+                            } else {
+                                PLOGI << "Didn't receive vote from " << peer << ".";
                             }
                         }
                     );
+                    PLOGI << "Sent VoteRequest rpc to " << peer << ".";
                 }
             }
         );
+        PLOGI << "Started election task.";
     } else {
         PLOGF << "Trying to start election task while a task pre-exists.";
     }
@@ -175,6 +190,7 @@ void Raft::start_heartbeat_task() {
                 }
             }
         );
+        PLOGI << "Started heartbeat task.";
     } else {
         PLOGF << "Trying to start heartbeat task while a task pre-exists.";
     }
@@ -184,6 +200,7 @@ void Raft::stop_election_task() {
     if (election_task != nullptr) {
         delete election_task;
         election_task = nullptr;
+        PLOGI << "Stopped election task.";
     }
 }
 
@@ -191,6 +208,7 @@ void Raft::stop_heartbeat_task() {
     if (heartbeat_task != nullptr) {
         delete heartbeat_task;
         heartbeat_task = nullptr;
+        PLOGI << "Stopped heartbeat task.";
     }
 }
 
