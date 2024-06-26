@@ -1,10 +1,10 @@
-#include <iostream>
-
 #include <plog/Log.h>
 #include "plog/Initializers/RollingFileInitializer.h"
 
 #include "raft.h"
 #include "utils.h"
+
+#include <iostream> // delete later (testing for cli)
 
 // (TODO)
 // figure out how to put define flags into CMake
@@ -61,6 +61,8 @@ void Raft::stop() {
 
 rpc_rep_t Raft::prcs_vote_request(uint64_t term, const std::string& address) {
     std::lock_guard<std::mutex> lock(node_m);
+    std::cout << "Received vote request from " << address << " for term " << term << std::endl;
+    std::cout << "Current state: " << "<" << state->voted_for() << ">, " << state->term() << std::endl;
     update_term(term);
 
     bool grant = state->term() == term; // term is updated if smaller
@@ -70,6 +72,7 @@ rpc_rep_t Raft::prcs_vote_request(uint64_t term, const std::string& address) {
     if (grant) {
         state->set_voted_for(address);
         state->save_pstate();
+        std::cout << "Granted vote to " << address << " for term " << term << std::endl;
     }
     return rpc_rep_t {
         .success = grant,
@@ -79,6 +82,7 @@ rpc_rep_t Raft::prcs_vote_request(uint64_t term, const std::string& address) {
 
 rpc_rep_t Raft::prcs_append_entries(uint64_t term, const std::string& address) {
     std::lock_guard<std::mutex> lock(node_m);
+    std::cout << "Received heartbeat from " << address << " for term " << term << std::endl;
     update_term(term);
     leader = address;
     // do other logic for later.
@@ -108,6 +112,7 @@ void Raft::become_leader() {
     status = Status::Leader;
     stop_election_task();
     start_heartbeat_task();
+    std::cout << "Became leader for term " << state->term() << std::endl;
 }
 
 void Raft::start_election_task() {
@@ -120,13 +125,22 @@ void Raft::start_election_task() {
             },
             [this]() {
                 std::lock_guard<std::mutex> lock(node_m);
-                votes = 0;
+                status = Status::Candidate;
+                votes = 1;
+                state->increment_term();
+                state->set_voted_for(address);
+                state->save_pstate();
+                std::cout << "starting election" << std::endl;
+                
                 for (const auto& peer : peers) {
+                    if (peer == address)
+                        continue;
                     rpc->request_vote(peer, state->term(), address, 
                         [this] (uint64_t term, bool granted) {
                             std::lock_guard<std::mutex> lock(node_m);
                             update_term(term);
                             if (status == Status::Candidate && granted) {
+                                std::cout << "Received vote" << std::endl;
                                 if (++votes >= majority_quorum()) {
                                     become_leader();
                                 }
@@ -150,6 +164,8 @@ void Raft::start_heartbeat_task() {
             [this]() {
                 std::lock_guard<std::mutex> lock(node_m);
                 for (const auto& peer : peers) {
+                    if (peer == address)
+                        continue;
                     rpc->append_entries(peer, state->term(), address, 
                         [this] (uint64_t term, bool success) {
                             std::lock_guard<std::mutex> lock(node_m);

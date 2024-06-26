@@ -4,7 +4,7 @@
 ## Installation
 ```
 git clone https://github.com/kyuds/raft.git
-cd raft && ./build.sh
+cd raft && ./compile.sh
 ```
 
 ### Installing gRPC
@@ -15,8 +15,18 @@ This project uses gRPC to communicate messages between each node. In order to in
 export GRPC_CPP_INSTALL=<path to installed grpc directory>
 ```
 
+## Running Election
+Open five new terminal windows and run the following command, one per window. Each will be a separate Raft node that is able to elect leaders.
+```
+build/bin/raft node1 localhost:10001
+build/bin/raft node2 localhost:10002
+build/bin/raft node3 localhost:10003
+build/bin/raft node4 localhost:10004
+build/bin/raft node5 localhost:10005
+```
+
 ## Development Plan
-- [ ] v0: leader election mechanism
+- [X] v0: leader election mechanism
 - [ ] v1: std:string based log replication, fixed quorum
 - [ ] v2: single value state machine replication
 - [ ] v3: single value SMR + snapshot

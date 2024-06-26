@@ -23,6 +23,7 @@ class State {
         bool load_pstate();
 
         uint64_t term() { return _term; }
+        void increment_term() { _term++; }
         const std::string& voted_for() { return _voted_for; }
         void set_term(const uint64_t t) { _term = t; }
         void set_voted_for(const std::string& v) { _voted_for = v; }
