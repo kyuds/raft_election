@@ -4,7 +4,7 @@
 ## Installation
 ```
 git clone https://github.com/kyuds/raft.git
-cd raft && ./compile.sh
+cd raft && ./setup.sh
 ```
 
 ### Installing gRPC
