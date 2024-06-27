@@ -21,8 +21,8 @@ Config::Config(const std::string& name,
 
         storage_dir = std::string(data.value("/storage/directory"_json_pointer, "tmp"));
         append_node_name = data.value("/storage/append_node_name"_json_pointer, false);
-        min_timeout = data.value("/election/min_timeout"_json_pointer, 200);
-        max_timeout = data.value("/election/max_timeout"_json_pointer, 400);
+        min_timeout = data.value("/election/min_timeout"_json_pointer, 300);
+        max_timeout = data.value("/election/max_timeout"_json_pointer, 500);
         rpc_timeout = data.value("/rpc/timeout"_json_pointer, 100);
         peer_file = std::string(data.value("/peer/config"_json_pointer, "peer.txt"));
         heartbeat = data.value("/peer/heartbeat"_json_pointer, 20);
@@ -42,8 +42,8 @@ Config * Config::default_config(const std::string& name,
             ->set_address(address)
             ->set_peer_file("peer.txt")
             ->set_heartbeat(20)
-            ->set_min_timeout(150)
-            ->set_max_timeout(300)
+            ->set_min_timeout(300)
+            ->set_max_timeout(500)
             ->set_rpc_timeout(100)
             ->set_storage_dir("tmp", true);
 }

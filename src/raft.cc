@@ -143,7 +143,9 @@ void Raft::start_election_task() {
                         [this, &peer] (uint64_t term, bool granted) {
                             std::lock_guard<std::mutex> lock(node_m);
                             update_term(term);
-                            if (status == Status::Candidate && granted) {
+                            if (status != Status::Candidate) return;
+                            
+                            if (granted) {
                                 std::cout << "Received vote" << std::endl;
                                 if (++votes >= majority_quorum())
                                     become_leader();
@@ -183,6 +185,8 @@ void Raft::start_heartbeat_task() {
                         [this, &peer] (uint64_t term, bool success) {
                             std::lock_guard<std::mutex> lock(node_m);
                             update_term(term);
+                            if (status != Status::Follower) return;
+                            
                             update_peer_time(peer);
                         }
                     );

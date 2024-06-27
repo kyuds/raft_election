@@ -4,8 +4,8 @@
         "append_node_name": true
     },
     "election": {
-        "min_timeout": 200,
-        "max_timeout": 400
+        "min_timeout": 300,
+        "max_timeout": 500
     },
     "rpc": {
         "timeout": 100
