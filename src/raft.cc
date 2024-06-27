@@ -30,16 +30,11 @@ Raft::Raft(Config * conf)
 
     state = std::make_unique<State>(conf->get_storage_dir());
     rpc = std::make_unique<Rpc>(address, conf->get_rpc_timeout());
+    // (TODO: kyuds) copy over peer file to stable storage.
+    // This is to update cluster membership changes independently.
     peers = file_line_to_vec(conf->get_peer_file());
 }
 
-// For each module, there is a separate constructor and a separate
-// initializer. This is to ensure that each module is initialized
-// and started properly before the Raft service is started. 
-// A return value of "false" from this function indicates that 
-// any of the modules that were supposed to start didn't start
-// properly. This is a design choice made because returning success
-// indicators from consturctors is rather complicated.
 void Raft::start() {
     status = Status::Follower;
     state->initialize();
@@ -52,6 +47,7 @@ void Raft::start() {
         }
     );
     start_election_task();
+    start_heartbeat_task();
     PLOGI << "Started raft service on " << address << " as " << name << ".";
 }
 
@@ -99,7 +95,8 @@ rpc_rep_t Raft::prcs_append_entries(uint64_t term, const std::string& address) {
 
 // assume that Raft node is locked.
 void Raft::update_term(uint64_t term) {
-    if (status != Status::Leader) election_task->reset();
+    if (status != Status::Leader)
+        reset_election_task();
     if (state->term() < term) {
         PLOGI << "Found higher term " << term 
               << " than current term " << state->term() 
@@ -107,10 +104,8 @@ void Raft::update_term(uint64_t term) {
         state->set_term(term);
         state->set_voted_for("");
         state->save_pstate();
-        if (status == Status::Leader) {
-            stop_heartbeat_task();
-            start_election_task();
-        }
+        if (status == Status::Leader)
+            pause_heartbeat_task();
         status = Status::Follower;
     }
 }
@@ -118,8 +113,7 @@ void Raft::update_term(uint64_t term) {
 // assume that Raft node is locked.
 void Raft::become_leader() {
     status = Status::Leader;
-    stop_election_task();
-    start_heartbeat_task();
+    resume_heartbeat_task();
     std::cout << "Became leader for term " << state->term() << std::endl;
     PLOGI << "Became leader for term " << state->term() << ".";
 }
@@ -151,9 +145,8 @@ void Raft::start_election_task() {
                             update_term(term);
                             if (status == Status::Candidate && granted) {
                                 std::cout << "Received vote" << std::endl;
-                                if (++votes >= majority_quorum()) {
+                                if (++votes >= majority_quorum())
                                     become_leader();
-                                }
                                 PLOGI << "Received vote from " << peer << ".";
                             } else {
                                 PLOGI << "Didn't receive vote from " << peer << ".";
@@ -178,22 +171,56 @@ void Raft::start_heartbeat_task() {
             },
             [this]() {
                 std::lock_guard<std::mutex> lock(node_m);
+                if (status != Status::Leader) {
+                    PLOGW << "Attempted to send heartbeats while not leader.";
+                    return;
+                }
+                int seen = 1; // self
                 for (const auto& peer : peers) {
-                    if (peer == address)
+                    if (peer == address) // skip self
                         continue;
                     rpc->append_entries(peer, state->term(), address, 
-                        [this] (uint64_t term, bool success) {
+                        [this, &peer] (uint64_t term, bool success) {
                             std::lock_guard<std::mutex> lock(node_m);
                             update_term(term);
+                            update_peer_time(peer);
                         }
                     );
+                    if (peer_elapsed_time(peer) < (long long) max_election_timeout)
+                        seen++;
                 }
+                // check "seen" nodes and demote leader if necessary.
+                if (seen < majority_quorum()) {
+                    status = Status::Follower;
+                    pause_heartbeat_task();
+                    PLOGI << "Demoted from leader. Unable to contact majority cluster.";
+                    std::cout << "Demoted because leader could not contact majority cluster." << std::endl;
+                }
+                // prevent forced election.
+                reset_election_task();
             }
         );
-        PLOGI << "Started heartbeat task.";
+        // because when starting, node is not a leader.
+        pause_heartbeat_task();
+        PLOGI << "Started sleeping heartbeat task.";
     } else {
         PLOGF << "Trying to start heartbeat task while a task pre-exists.";
     }
+}
+
+void Raft::reset_election_task() {
+    election_task->reset();
+}
+
+void Raft::pause_heartbeat_task() {
+    heartbeat_task->pause();
+}
+
+void Raft::resume_heartbeat_task() {
+    // reset peer timers.
+    for (auto peer : peers)
+        update_peer_time(peer);
+    heartbeat_task->resume();
 }
 
 void Raft::stop_election_task() {

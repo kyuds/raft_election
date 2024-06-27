@@ -5,6 +5,7 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "config.h"
 #include "state.h"
@@ -52,6 +53,11 @@ class Raft {
 
         void start_election_task();
         void start_heartbeat_task();
+        void reset_election_task();
+        void pause_heartbeat_task();
+        void resume_heartbeat_task();
+        // should not be called when node_m mutex is held
+        // may deadlock. These are only for destruction.
         void stop_election_task();
         void stop_heartbeat_task();
 
@@ -67,6 +73,8 @@ class Raft {
         std::string leader;
         std::unique_ptr<State> state;
         std::vector<std::string> peers;
+        std::unordered_map<std::string, 
+            std::chrono::time_point<std::chrono::steady_clock>> peer_last_respond;
 
         std::mutex node_m;
         
@@ -84,7 +92,7 @@ class Raft {
         TimedCycle * heartbeat_task;
 
         const int min_election_timeout;
-        const int max_election_timeout;
+        const int max_election_timeout; // also serves as leader timeout
         const int heartbeat;
         const int batchsize;
         std::mt19937 generator;
@@ -93,6 +101,16 @@ class Raft {
         // election helpers
         int votes;
         int majority_quorum() { return (peers.size() + 1) / 2; }
+
+        // heartbeat helpers
+        void update_peer_time(const std::string& p) { 
+            peer_last_respond[p] = std::chrono::steady_clock::now();
+        }
+        long long peer_elapsed_time(const std::string& p) {
+            return std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - peer_last_respond[p]
+            ).count();
+        }
 };
 
 } // namespace raft
