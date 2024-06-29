@@ -1,0 +1,20 @@
+{
+    "storage": {
+        "directory": "tmp",
+        "append_node_name": true
+    },
+    "election": {
+        "min_timeout": 300,
+        "max_timeout": 500
+    },
+    "rpc": {
+        "timeout": 100
+    },
+    "peer": {
+        "config": "peer.txt",
+        "heartbeat": 20
+    },
+    "replication": {
+        "batchsize": 10
+    }
+}

@@ -16,6 +16,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# fetch library URLs
+include(FetchContent)
+set(JSON_LIB https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
+set(JSON_LIB_LINK nlohmann_json::nlohmann_json)
+set(PLOG_LIB https://github.com/SergiusTheBest/plog/archive/refs/tags/1.1.10.tar.gz)
+
 # (TODO: kyuds) configure cmake to local install/build grpc
 # include(FetchContent)
 # set(ABSL_ENABLE_INSTALL ON)
