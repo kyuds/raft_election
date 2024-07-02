@@ -20,6 +20,7 @@ void Rpc::start(rv_service_clbk_t rv_cb, ae_service_clbk_t ae_cb) {
 
 void Rpc::clear() {
     std::lock_guard<std::mutex> lock(channel_m);
+    std::cout << "cleared channels" << std::endl;
     channels.clear();
 }
 
@@ -76,6 +77,7 @@ std::unique_ptr<RaftRpc::Stub> Rpc::get_stub(const std::string& address) {
         args.SetInt(GRPC_ARG_MIN_RECONNECT_BACKOFF_MS , 100);
         channels[std::string(address)] = grpc::CreateCustomChannel(
             address, grpc::InsecureChannelCredentials(), args);
+        std::cout << "Created new channel " << address << std::endl;
     }
     auto channel = channels.find(address)->second;
     return RaftRpc::RaftRpc::NewStub(channel);
