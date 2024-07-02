@@ -185,7 +185,7 @@ void Raft::start_heartbeat_task() {
                         [this, &peer] (uint64_t term, bool success) {
                             std::lock_guard<std::mutex> lock(node_m);
                             update_term(term);
-                            if (status != Status::Follower) return;
+                            if (status != Status::Leader) return;
                             
                             update_peer_time(peer);
                         }
@@ -198,7 +198,7 @@ void Raft::start_heartbeat_task() {
                     status = Status::Follower;
                     pause_heartbeat_task();
                     PLOGI << "Demoted from leader. Unable to contact majority cluster.";
-                    std::cout << "Demoted because leader could not contact majority cluster." << std::endl;
+                    std::cout << "Demoted because leader could not contact majority cluster." << seen << std::endl;
                 }
                 // prevent forced election.
                 reset_election_task();
@@ -218,6 +218,7 @@ void Raft::reset_election_task() {
 
 void Raft::pause_heartbeat_task() {
     heartbeat_task->pause();
+    rpc->clear();
 }
 
 void Raft::resume_heartbeat_task() {
