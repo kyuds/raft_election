@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.15)
 project(
     Raft 
     VERSION 0.1
-    DESCRIPTION "Raft implementation in C++"
+    DESCRIPTION "raft consensus written in C++"
     LANGUAGES CXX
 )
 

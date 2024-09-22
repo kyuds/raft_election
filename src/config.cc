@@ -21,6 +21,22 @@ Config * Config::default_config(
         ->set_rpc_timeout(100);
 }
 
+std::string Config::info() {
+    std::ostringstream oss;
+    oss << "Configurations for Raft Node: "
+        << "\n- Name: " << name
+        << "\n- Address: " << address
+        << "\n- Peer File: " << peer_file
+        << "\n- Storage Directory: " << storage_dir
+        << "\n- Heartbeat: " << heartbeat
+        << "\n- Election Timeout: " << min_election_timeout 
+        << ", " << max_election_timeout
+        << "\n- RPC Timeout: " << rpc_timeout << "\n";
+    return oss.str();
+}
+
+// misc: setters
+
 Config * Config::set_name(const std::string& name) {
     this->name = name;
     return this;
@@ -59,19 +75,6 @@ Config * Config::set_max_election_timeout(const int timeout) {
 Config * Config::set_rpc_timeout(const int timeout) {
     rpc_timeout = timeout;
     return this;
-}
-
-std::string Config::info() {
-    std::ostringstream oss;
-    oss << "Configurations for Raft Node: "
-        << "\n- Name: " << name
-        << "\n- Address: " << address
-        << "\n- Peer File: " << peer_file
-        << "\n- Storage Directory: " << storage_dir
-        << "\n- Heartbeat: " << heartbeat
-        << "\n- Election Timeout: " << min_election_timeout << ", " << max_election_timeout
-        << "\n- RPC Timeout: " << rpc_timeout << "\n";
-    return oss.str();
 }
 
 } // namespace raft

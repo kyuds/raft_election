@@ -5,6 +5,10 @@ add_executable(
     cli.cc
     config.h
     config.cc
+    raft.h
+    raft.cc
+    utils.h
+    utils.cc
 )
 
 target_include_directories(raft PUBLIC
