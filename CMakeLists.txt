@@ -24,6 +24,11 @@ set(PLOG_LIB https://github.com/SergiusTheBest/plog/archive/refs/tags/1.1.10.tar
 FetchContent_Declare(plog URL ${PLOG_LIB})
 FetchContent_MakeAvailable(plog)
 
+# rocksdb
+set(ROCKSDB_LIB https://github.com/facebook/rocksdb/archive/refs/tags/v9.6.1.tar.gz)
+FetchContent_Declare(rocksdb URL ${ROCKSDB_LIB})
+FetchContent_MakeAvailable(rocksdb)
+
 # TODO: grpc
 
 

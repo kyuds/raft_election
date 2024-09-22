@@ -4,6 +4,7 @@
 #include "plog/Initializers/RollingFileInitializer.h"
 
 #include "raft.h"
+#include "storage.h"
 
 namespace raft {
 
@@ -19,6 +20,8 @@ Raft::Raft(Config * config)
                combine_paths(config->get_storage_dir(), "log.txt").c_str(), 
                1000000, 5);
     PLOGI << "Initialized raft node with config:\n" << config->info();
+
+    Storage * storage = new Storage(config->get_storage_dir());
 }
 
 } // namespace raft

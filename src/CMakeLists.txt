@@ -7,6 +7,8 @@ add_executable(
     config.cc
     raft.h
     raft.cc
+    storage.h
+    storage.cc
     utils.h
     utils.cc
 )
@@ -18,4 +20,5 @@ target_include_directories(raft PUBLIC
 target_link_libraries(raft
     PRIVATE
         plog
+        rocksdb
 )
