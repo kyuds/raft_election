@@ -22,8 +22,8 @@ public:
     Raft(Config * config);
     Raft(const std::string& name, const std::string& address)
         : Raft(Config::default_config(
-            name, address, combine_paths("tmp", name), "peer.txt")
-          ) {}
+            name, address, combine_paths("tmp", name), "peer.txt"
+        )) {}
     ~Raft() {}
 
 // member variables
