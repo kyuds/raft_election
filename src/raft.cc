@@ -19,9 +19,13 @@ Raft::Raft(Config * config)
     plog::init(plog::info, 
                combine_paths(config->get_storage_dir(), "log.txt").c_str(), 
                1000000, 5);
-    PLOGI << "Initialized raft node with config:\n" << config->info();
+    storage = std::make_unique<Storage>(config->get_storage_dir());
 
-    Storage * storage = new Storage(config->get_storage_dir());
+    std::cout << storage->term() << std::endl;
+    storage->inc_term();
+    storage->save_state();
+
+    PLOGI << "Initialized raft node with config:\n" << config->info();
 }
 
 } // namespace raft

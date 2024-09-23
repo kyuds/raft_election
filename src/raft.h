@@ -5,6 +5,7 @@
 #include <string>
 
 #include "config.h"
+#include "storage.h"
 #include "utils.h"
 
 namespace raft {
@@ -52,7 +53,7 @@ private:
     //     services     //
     //////////////////////
 
-    // storage
+    std::unique_ptr<Storage> storage;
     // rpc
 
     //////////////////////
