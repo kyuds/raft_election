@@ -1,12 +1,16 @@
-# TODO: add proto folder
+# grpc compiler
+include(proto/rpc.cmake)
 
 add_executable(
     raft
     cli.cc
+    callback.h
     config.h
     config.cc
     raft.h
     raft.cc
+    rpc.h
+    rpc.cc
     storage.h
     storage.cc
     utils.h
@@ -21,4 +25,5 @@ target_link_libraries(raft
     PRIVATE
         plog
         rocksdb
+        grpc_proto
 )

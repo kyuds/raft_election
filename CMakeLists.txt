@@ -29,8 +29,5 @@ set(ROCKSDB_LIB https://github.com/facebook/rocksdb/archive/refs/tags/v9.6.1.tar
 FetchContent_Declare(rocksdb URL ${ROCKSDB_LIB})
 FetchContent_MakeAvailable(rocksdb)
 
-# TODO: grpc
-
-
 # Include src as subdirectory
 add_subdirectory(src)
