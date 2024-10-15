@@ -11,6 +11,6 @@ else
 fi
 
 cd build
-cmake ..
+cmake -DCMAKE_PREFIX_PATH=$GRPC_CPP_INSTALL ..
 cmake --build .
 cd ..
