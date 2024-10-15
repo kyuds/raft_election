@@ -11,6 +11,7 @@ TODO:
 */
 
 #include <string>
+#include <vector>
 
 namespace raft {
 
@@ -29,8 +30,8 @@ public:
     // getters
     const std::string& get_name() { return name; }
     const std::string& get_address() { return address; }
-    const std::string& get_peer_file() { return peer_file; }
     const std::string& get_storage_dir() { return storage_dir; }
+    std::vector<std::string>& get_peers() { return peers; }
 
     int get_heartbeat() { return heartbeat; }
     int get_min_election_timeout() { return min_election_timeout; }
@@ -40,12 +41,13 @@ public:
     // setters. Allows chaining
     Config * set_name(const std::string& name);
     Config * set_address(const std::string& address);
-    Config * set_peer_file(const std::string& peer_file);
     Config * set_storage_dir(const std::string& storage_dir);
     Config * set_heartbeat(const int heartbeat);
     Config * set_min_election_timeout(const int timeout);
     Config * set_max_election_timeout(const int timeout);
     Config * set_rpc_timeout(const int timeout);
+    Config * set_peers_from_file(const std::string& file);
+    Config * add_peer(const std::string& address);
 
     // info (for debug purposes)
     std::string info();
@@ -54,8 +56,8 @@ private:
     // node
     std::string name;
     std::string address;
-    std::string peer_file;
     std::string storage_dir;
+    std::vector<std::string> peers;
 
     // leader
     int heartbeat; // milliseconds

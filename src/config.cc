@@ -1,6 +1,7 @@
 #include <sstream>
 
 #include "config.h"
+#include "utils.h"
 
 namespace raft {
 
@@ -14,7 +15,7 @@ Config * Config::default_config(
         ->set_name(name)
         ->set_address(address)
         ->set_storage_dir(storage_dir)
-        ->set_peer_file(peer_file)
+        ->set_peers_from_file(peer_file)
         ->set_heartbeat(20)
         ->set_min_election_timeout(300)
         ->set_max_election_timeout(500)
@@ -26,7 +27,7 @@ std::string Config::info() {
     oss << "Configurations for Raft Node: "
         << "\n- Name: " << name
         << "\n- Address: " << address
-        << "\n- Peer File: " << peer_file
+        << "\n- Peers: " << vector_to_string(peers)
         << "\n- Storage Directory: " << storage_dir
         << "\n- Heartbeat: " << heartbeat
         << "\n- Election Timeout: " << min_election_timeout 
@@ -47,8 +48,13 @@ Config * Config::set_address(const std::string& address) {
     return this;
 }
 
-Config * Config::set_peer_file(const std::string& peer_file) {
-    this->peer_file = peer_file;
+Config * Config::set_peers_from_file(const std::string& peer_file) {
+    this->peers = get_lines(peer_file);
+    return this;
+}
+
+Config * Config::add_peer(const std::string& address) {
+    this->peers.emplace_back(address);
     return this;
 }
 
