@@ -13,6 +13,10 @@ add_executable(
     rpc.cc
     storage.h
     storage.cc
+    tasks/electiontask.h
+    tasks/electiontask.cc
+    tasks/synctask.h
+    tasks/synctask.cc
     utils.h
     utils.cc
 )
