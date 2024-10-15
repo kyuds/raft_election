@@ -5,11 +5,6 @@
 namespace raft {
 
 // API
-Rpc::~Rpc() {
-    server->Shutdown();
-    delete service;
-}
-
 void Rpc::start(service_rv_t rv_cb) {
     grpc::ServerBuilder builder;
     builder.AddListeningPort(address, grpc::InsecureServerCredentials());

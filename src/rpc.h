@@ -20,7 +20,10 @@ public:
     Rpc(const std::string& address, int timeout) 
         : address(address)
         , timeout(timeout) {}
-    ~Rpc();
+    ~Rpc() {
+        server->Shutdown();
+        delete service;
+    }
 
     // start gRPC server
     void start(service_rv_t rv_cb);
