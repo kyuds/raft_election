@@ -7,3 +7,4 @@ Features:
 
 Requirements:
 - Fixed Peer Group
+- GRPC installed on system (env var GRPC_CPP_INSTALL)
