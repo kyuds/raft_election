@@ -1,6 +1,8 @@
 #include "rpc.h"
 
 #include <chrono>
+#include <stdexcept>
+#include <plog/Log.h>
 
 namespace raft {
 
@@ -11,6 +13,10 @@ void Rpc::start(service_rv_t rv_cb) {
     service = new ServerImpl(std::move(rv_cb));
     builder.RegisterService(service);
     server = builder.BuildAndStart();
+    if (!server) {
+        PLOGE << "Failed to start gRPC server!";
+        throw std::runtime_error("Unable to start gRPC server.");
+    }
 }
 
 void Rpc::clear() {
@@ -29,6 +35,22 @@ void Rpc::request_vote(const std::string& peer,
     client->RequestVote(std::move(request), std::move(callback));
 }
 
+// helper for request callback timeouts
+std::chrono::system_clock::time_point deadline(const int t) {
+    return std::chrono::system_clock::now() + std::chrono::milliseconds(t);
+}
+
+// ClientImpl
+void Rpc::ClientImpl::RequestVote(VoteRequest request, client_rv_t callback) {
+    context.set_deadline(deadline(timeout));
+    stub->async()->RequestVote(&context, &request, &vr,
+        [this, callback = std::move(callback)](grpc::Status status) {
+            if (status.ok()) 
+                callback(vr.term(), vr.granted());
+            delete this;
+        });
+}
+
 // ServerImpl
 ServerUnaryReactor* Rpc::ServerImpl::RequestVote(CallbackServerContext* context,
                                                 const VoteRequest* request,
@@ -40,23 +62,6 @@ ServerUnaryReactor* Rpc::ServerImpl::RequestVote(CallbackServerContext* context,
     ServerUnaryReactor* reactor = context->DefaultReactor();
     reactor->Finish(grpc::Status::OK);
     return reactor;
-}
-
-// ClientImpl
-
-// helper
-std::chrono::system_clock::time_point deadline(const int t) {
-    return std::chrono::system_clock::now() + std::chrono::milliseconds(t);
-}
-
-void Rpc::ClientImpl::RequestVote(VoteRequest request, client_rv_t callback) {
-    context.set_deadline(deadline(timeout));
-    stub->async()->RequestVote(&context, &request, &vr,
-        [this, callback = std::move(callback)](grpc::Status status) {
-            if (status.ok()) 
-                callback(vr.term(), vr.granted());
-            delete this;
-        });
 }
 
 // Channel Caching

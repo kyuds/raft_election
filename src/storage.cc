@@ -20,7 +20,6 @@ Storage::Storage(const std::string& dir) {
         PLOGE << "Error opening RocksDB: " << status.ToString();
         throw std::runtime_error("Unable to open RocksDB");
     }
-    load_state();
 }
 
 Storage::~Storage() {

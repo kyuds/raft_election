@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include <plog/Log.h>
 #include "plog/Initializers/RollingFileInitializer.h"
 
@@ -20,12 +18,25 @@ Raft::Raft(Config * config)
                combine_paths(config->get_storage_dir(), "log.txt").c_str(), 
                1000000, 5);
     storage = std::make_unique<Storage>(config->get_storage_dir());
-
-    std::cout << storage->term() << std::endl;
-    storage->inc_term();
-    storage->save_state();
-
+    rpc = std::make_unique<Rpc>(address, config->get_rpc_timeout());
     PLOGI << "Initialized raft node with config:\n" << config->info();
+}
+
+void Raft::start() {
+    status = Status::Follower;
+    storage->load_state();
+    rpc->start(
+        [this] (uint64_t term, const std::string& address) {
+            return rep_t {
+                .term = storage->term(),
+                .success = true
+            };
+        }
+    );
+}
+
+void Raft::stop() {
+    // stop tasks later.
 }
 
 } // namespace raft

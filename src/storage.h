@@ -11,6 +11,9 @@
 
 namespace raft {
 
+// All storage system operations happen either single-threadedly OR the 
+// raft_mutex held. Therefore, there is no need for synchronization here.
+
 class Storage {
 public:
     Storage(const std::string& dir);

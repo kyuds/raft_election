@@ -4,9 +4,14 @@
 #include <mutex>
 #include <string>
 
+#include "callback.h"
 #include "config.h"
+#include "rpc.h"
 #include "storage.h"
 #include "utils.h"
+
+#define TMP_DIR "tmp"
+#define PEER_FILE "peer.txt"
 
 namespace raft {
 
@@ -23,9 +28,20 @@ public:
     Raft(Config * config);
     Raft(const std::string& name, const std::string& address)
         : Raft(Config::default_config(
-            name, address, combine_paths("tmp", name), "peer.txt"
-        )) {}
-    ~Raft() {}
+            name, address, combine_paths(TMP_DIR, name), PEER_FILE)) {}
+    ~Raft() { stop(); }
+
+    void start();
+    void stop();
+
+// // helper functions for Raft
+// private:
+//     // processors for RPC requests
+//     rep_t process_vote_request(uint64_t term, const std::string& address);
+
+//     // helpers
+//     void update_term(uint64_t term);
+//     void become_leader();
 
 // member variables
 private:
@@ -46,7 +62,8 @@ private:
     // state
     Status status;
     std::string leader;
-    // peer vector
+
+    // peers
     // 
 
     //////////////////////
@@ -54,7 +71,7 @@ private:
     //////////////////////
 
     std::unique_ptr<Storage> storage;
-    // rpc
+    std::unique_ptr<Rpc> rpc;
 
     //////////////////////
     //       task       //
