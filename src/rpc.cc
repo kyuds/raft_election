@@ -7,10 +7,10 @@
 namespace raft {
 
 // API
-void Rpc::start(service_rv_t rv_cb) {
+void Rpc::start(service_rv_t rv_cb, service_ae_t ae_cb) {
     grpc::ServerBuilder builder;
     builder.AddListeningPort(address, grpc::InsecureServerCredentials());
-    service = new ServerImpl(std::move(rv_cb));
+    service = new ServerImpl(std::move(rv_cb), std::move(ae_cb));
     builder.RegisterService(service);
     server = builder.BuildAndStart();
     if (!server) {
@@ -35,6 +35,17 @@ void Rpc::request_vote(const std::string& peer,
     client->RequestVote(std::move(request), std::move(callback));
 }
 
+void Rpc::append_entries(const std::string& peer,
+                        const uint64_t term,
+                        client_ae_t callback)
+{
+    AppendRequest request;
+    request.set_term(term);
+    request.set_leader(address);
+    auto client = new ClientImpl(get_stub(peer), timeout);
+    client->AppendEntries(std::move(request), std::move(callback));
+}
+
 // helper for request callback timeouts
 std::chrono::system_clock::time_point deadline(const int t) {
     return std::chrono::system_clock::now() + std::chrono::milliseconds(t);
@@ -51,14 +62,38 @@ void Rpc::ClientImpl::RequestVote(VoteRequest request, client_rv_t callback) {
         });
 }
 
+void Rpc::ClientImpl::AppendEntries(AppendRequest request, client_ae_t callback) {
+    context.set_deadline(deadline(timeout));
+    stub->async()->AppendEntries(&context, &request, &ar,
+        [this, callback = std::move(callback)](grpc::Status status) {
+            if (status.ok())
+                callback(ar.term(), ar.success());
+            delete this;
+        });
+}
+
 // ServerImpl
-ServerUnaryReactor* Rpc::ServerImpl::RequestVote(CallbackServerContext* context,
-                                                const VoteRequest* request,
-                                                VoteResponse* response)
+ServerUnaryReactor* Rpc::ServerImpl::RequestVote(
+    CallbackServerContext* context,
+    const VoteRequest* request,
+    VoteResponse* response)
 {
     rep_t r = rv_clbk(request->term(), request->addr());
     response->set_term(r.term);
     response->set_granted(r.success);
+    ServerUnaryReactor* reactor = context->DefaultReactor();
+    reactor->Finish(grpc::Status::OK);
+    return reactor;
+}
+
+ServerUnaryReactor* Rpc::ServerImpl::AppendEntries(
+    CallbackServerContext* context,
+    const AppendRequest* request,
+    AppendResponse* response)
+{
+    rep_t r = ae_clbk(request->term(), request->leader());
+    response->set_term(r.term);
+    response->set_success(r.success);
     ServerUnaryReactor* reactor = context->DefaultReactor();
     reactor->Finish(grpc::Status::OK);
     return reactor;

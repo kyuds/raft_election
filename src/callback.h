@@ -15,8 +15,9 @@ typedef struct {
 typedef std::function<void(uint64_t, bool)> client_rv_t;
 typedef std::function<rep_t(uint64_t, const std::string&)> service_rv_t;
 
-// Append Entries
-
+// Append Entries (TODO: add more params)
+typedef std::function<void(uint64_t, bool)> client_ae_t;
+typedef std::function<rep_t(uint64_t, const std::string&)> service_ae_t;
 
 } // namespace raft
 

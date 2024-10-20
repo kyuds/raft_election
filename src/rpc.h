@@ -26,7 +26,7 @@ public:
     }
 
     // start gRPC server
-    void start(service_rv_t rv_cb);
+    void start(service_rv_t rv_cb, service_ae_t ae_cb);
     // clear all stubs (when node converts to follower)
     void clear();
 
@@ -34,6 +34,9 @@ public:
     void request_vote(const std::string& peer, 
                     const uint64_t term, 
                     client_rv_t callback);
+    void append_entries(const std::string& peer,
+                    const uint64_t term,
+                    client_ae_t callback);
 
 private:
     // Impl Wrappers for Client and Server Implementation.
@@ -46,6 +49,7 @@ private:
             , timeout(timeout) {}
 
         void RequestVote(VoteRequest request, client_rv_t callback);
+        void AppendEntries(AppendRequest request, client_ae_t callback);
 
     private:
         // context
@@ -55,19 +59,26 @@ private:
 
         // responses
         VoteResponse vr;
+        AppendResponse ar;
     };
 
     class ServerImpl: public RaftService::CallbackService {
     public:
-        ServerImpl(service_rv_t rv_clbk)
-            : rv_clbk(std::move(rv_clbk)) {}
+        ServerImpl(service_rv_t rv_clbk, service_ae_t ae_clbk)
+            : rv_clbk(std::move(rv_clbk))
+            , ae_clbk(std::move(ae_clbk)) {}
 
         ServerUnaryReactor* RequestVote(CallbackServerContext* context,
                                         const VoteRequest* request,
                                         VoteResponse* response) override;
+
+        ServerUnaryReactor* AppendEntries(CallbackServerContext* context,
+                                        const AppendRequest* request,
+                                        AppendResponse* response) override;
     
     private:
         service_rv_t rv_clbk;
+        service_ae_t ae_clbk;
     };
 
 private:
