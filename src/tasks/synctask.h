@@ -1,5 +1,5 @@
-#ifndef TIMEDCYCLE
-#define TIMEDCYCLE
+#ifndef RAFT_SYNC_TASK
+#define RAFT_SYNC_TASK
 
 #include <atomic>
 #include <chrono>
@@ -13,28 +13,21 @@
 
 namespace raft{
     
-class TimedCycle {
+class SyncTask {
     public:
-        TimedCycle(std::function<std::chrono::milliseconds()> interval, 
-                   std::function<void()> task);
-        ~TimedCycle();
-
-        void reset();
+        SyncTask(const int interval, std::function<void()> task);
+        ~SyncTask();
 
         void pause();
         void resume();
     
     private:
-        static void thread_func(TimedCycle * t);
-        bool should_die();
-        bool should_pause();
+        static void thread_func(SyncTask * t);
 
-        std::function<std::chrono::milliseconds()> interval;
+        const std::chrono::milliseconds interval;
         std::thread worker;
         std::mutex cv_m;
         std::condition_variable cv_c;
-        std::mutex p_m;
-        std::condition_variable p_c;
         std::atomic<bool> alive;
         std::atomic<bool> halt;
         std::function<void()> task;
@@ -42,4 +35,4 @@ class TimedCycle {
 
 } // namespace raft
 
-#endif // TIMEDCYCLE
+#endif // RAFT_SYNC_TASK

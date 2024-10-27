@@ -1,18 +1,22 @@
-# generate proto files
-include(cmake/proto.cmake)
+# grpc compiler
+include(proto/rpc.cmake)
 
-add_executable(raft
+add_executable(
+    raft
     cli.cc
+    callback.h
+    config.h
+    config.cc
     raft.h
     raft.cc
     rpc.h
     rpc.cc
-    state.h
-    state.cc
-    timedcycle.h
-    timedcycle.cc
-    config.h
-    config.cc
+    storage.h
+    storage.cc
+    tasks/electiontask.h
+    tasks/electiontask.cc
+    tasks/synctask.h
+    tasks/synctask.cc
     utils.h
     utils.cc
 )
@@ -21,16 +25,9 @@ target_include_directories(raft PUBLIC
     "${CMAKE_CURRENT_BINARY_DIR}"
 )
 
-# include json parser for ConfigParser
-FetchContent_Declare(json URL ${JSON_LIB})
-FetchContent_MakeAvailable(json)
-FetchContent_Declare(plog URL ${PLOG_LIB})
-FetchContent_MakeAvailable(plog)
-
 target_link_libraries(raft
-    PUBLIC
-        grpc_proto
     PRIVATE
-        ${JSON_LIB_LINK}
         plog
+        rocksdb
+        grpc_proto
 )

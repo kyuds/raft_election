@@ -2,7 +2,7 @@
 # proto files under src/generated. All files are created
 # under the single directory.
 
-find_package(protobuf CONFIG REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 
@@ -13,7 +13,7 @@ set(PROTO_SERVICES
 )
 
 # gRPC configurations
-set(_LIBPROTOBUF libprotobuf)
+set(_PROTOBUF_LIBPROTOBUF protobuf::libprotobuf)
 set(_GRPC_GRPC gRPC::grpc)
 set(_GRPC_GRPCPP gRPC::grpc++)
 set(_GRPC_REFLECTION gRPC::grpc++_reflection)

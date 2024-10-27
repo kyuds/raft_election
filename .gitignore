@@ -39,3 +39,6 @@ build/
 
 # testing
 tmp/
+
+# macOS
+.DS_Store
