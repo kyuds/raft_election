@@ -3,8 +3,9 @@
 
 Features:
 - [X] Leader Election
-- [X] Log Storage
+- [ ] Log Storage
+- [ ] State Machine
 
 Requirements:
-- Fixed Peer Group
-- GRPC installed on system (env var GRPC_CPP_INSTALL)
+- Fixed Peer Group (nodes are not added or removed)
+- GRPC installed on system (via env var GRPC_CPP_INSTALL)
