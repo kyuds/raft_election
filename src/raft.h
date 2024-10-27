@@ -5,6 +5,7 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "callback.h"
 #include "config.h"

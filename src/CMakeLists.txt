@@ -28,6 +28,6 @@ target_include_directories(raft PUBLIC
 target_link_libraries(raft
     PRIVATE
         plog
-        rocksdb
+        sqlite3
         grpc_proto
 )

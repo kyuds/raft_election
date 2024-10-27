@@ -24,10 +24,10 @@ set(PLOG_LIB https://github.com/SergiusTheBest/plog/archive/refs/tags/1.1.10.tar
 FetchContent_Declare(plog URL ${PLOG_LIB})
 FetchContent_MakeAvailable(plog)
 
-# rocksdb
-set(ROCKSDB_LIB https://github.com/facebook/rocksdb/archive/refs/tags/v9.6.1.tar.gz)
-FetchContent_Declare(rocksdb URL ${ROCKSDB_LIB})
-FetchContent_MakeAvailable(rocksdb)
+# sqlite
+set(SQLITE3_LIB https://github.com/sqlite/sqlite/archive/refs/tags/version-3.45.3.tar.gz)
+FetchContent_Declare(sqlite3 URL ${SQLITE3_LIB})
+FetchContent_MakeAvailable(sqlite3)
 
 # Include src as subdirectory
 add_subdirectory(src)
