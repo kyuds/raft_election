@@ -1,13 +1,9 @@
-#ifndef RAFT_STORAGE
-#define RAFT_STORAGE
+#ifndef RAFT_STORAGE_SQL
+#define RAFT_STORAGE_SQL
 
-#include <memory>
 #include <string>
-
-#include <rocksdb/db.h>
-
-#define RAFT_TERM_KEY "term"
-#define RAFT_VOTED_FOR_KEY "voted_for"
+#include <unordered_map>
+#include <sqlite3.h>
 
 namespace raft {
 
@@ -20,9 +16,12 @@ public:
     ~Storage();
 
 private:
-    rocksdb::DB * db;
+    void add_statement(const char* name, const char* command);
 
-public: // raft state
+    sqlite3 * db;
+    std::unordered_map<std::string, sqlite3_stmt*> statements;
+
+public:  // raft state
     bool save_state();
     void load_state();
 
@@ -34,10 +33,22 @@ public: // raft state
     void set_voted_for(const std::string& v) { _voted_for = v; }
 
 private: // raft state
+    bool get_metadata(sqlite3_stmt* stmt, const char* n, std::string& o);
+
     uint64_t _term;
     std::string _voted_for;
+
+public:  // raft logs
+    // TODO
+private: // raft logs
+    // TODO
 };
 
+// SQL commands: persistent state
+constexpr const char * PUT_METADATA = "put_metadata";
+constexpr const char * CREATE_METADATA_CMD = "CREATE TABLE IF NOT EXISTS metadata (id VARCHAR(50) PRIMARY KEY, value VARCHAR(255));";
+constexpr const char * GET_METADATA_CMD = "SELECT value FROM metadata WHERE id = ?;";
+constexpr const char * PUT_METADATA_CMD = "INSERT OR REPLACE INTO metadata (id, value) VALUES (?, ?);";
 } // namespace raft
 
-#endif // RAFT_STORAGE
+#endif // RAFT_STORAGE_SQL
