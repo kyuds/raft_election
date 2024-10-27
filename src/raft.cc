@@ -4,8 +4,6 @@
 #include "raft.h"
 #include "storage.h"
 
-#include <iostream>
-
 namespace raft {
 
 Raft::Raft(Config * config)
@@ -58,10 +56,6 @@ void Raft::stop() {
 // RPC request processors
 rep_t Raft::process_vote_request(uint64_t term, const std::string& candidate) {
     std::lock_guard<std::mutex> lock(raft_mutex);
-
-    std::cout << "Received vote request from " << candidate << " for term " << term << std::endl;
-    std::cout << "Current state: " << "<" << storage->voted_for() << ">, " << storage->term() << std::endl;
-
     update_term(term);
 
     bool grant = true;
@@ -72,7 +66,6 @@ rep_t Raft::process_vote_request(uint64_t term, const std::string& candidate) {
     if (grant) {
         storage->set_voted_for(candidate);
         storage->save_state();
-        std::cout << "Granted vote to " << candidate << " for term " << term << std::endl;
         PLOGI << "Granted vote to " << candidate << " for term " << term << ".";
     }
     return rep_t {
@@ -83,7 +76,6 @@ rep_t Raft::process_vote_request(uint64_t term, const std::string& candidate) {
 
 rep_t Raft::process_append_entries(uint64_t term, const std::string& leader) {
     std::lock_guard<std::mutex> lock(raft_mutex);
-    std::cout << "Received heartbeat from " << leader << " for term " << term << std::endl;
     update_term(term);
     if (this->leader != leader) {
         PLOGI << "Found new leader " << leader << ".";
@@ -105,7 +97,6 @@ void Raft::handle_election_task() {
     storage->set_voted_for(address);
     storage->save_state(); // Need to check for db failure.
     election_task->reset();
-    std::cout << "starting election" << std::endl;
     PLOGI << "Timeout: Starting election for term: " << storage->term() << ".";
 
     for (const auto& peer: peers) {
@@ -117,7 +108,6 @@ void Raft::handle_election_task() {
                 if (status != Status::Candidate) return;
 
                 if (granted) {
-                    std::cout << "Received vote" << std::endl;
                     PLOGI << "Received vote from " << peer << ".";
                     if (++votes >= majority_quorum()) 
                         become_leader();
@@ -153,7 +143,6 @@ void Raft::handle_heartbeat_task() {
         status = Status::Follower;
         heartbeat_task->pause();
         rpc->clear();
-        std::cout << "Demoted because leader could not contact majority cluster: " << seen << std::endl;
         PLOGI << "Demoted from leader. Unable to contact majority cluster.";
     }
     election_task->reset();
@@ -212,7 +201,6 @@ void Raft::become_leader() {
     for (auto peer : peers)
         update_peer_time(peer);
     heartbeat_task->resume();
-    std::cout << "Became leader for term " << storage->term() << std::endl;
     PLOGI << "Became leader for term " << storage->term() << ".";
 }
 
