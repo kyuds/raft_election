@@ -8,23 +8,23 @@ service RaftService {
 }
 
 message VoteRequest {
-    uint64 term = 1;
+    int64 term = 1;
     string addr = 2;
     // TODO: lastLogIndex, lastLogTerm
 }
 
 message VoteResponse {
-    uint64 term = 1;
+    int64 term = 1;
     bool granted = 2;
 }
 
 message AppendRequest {
-    uint64 term = 1;
+    int64 term = 1;
     string leader = 2;
     // TODO: append entries contents.
 }
 
 message AppendResponse {
-    uint64 term = 1;
+    int64 term = 1;
     bool success = 2;
 }

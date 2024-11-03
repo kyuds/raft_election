@@ -11,6 +11,7 @@ add_executable(
     raft.cc
     rpc.h
     rpc.cc
+    sqlcmd.h
     storage.h
     storage.cc
     tasks/electiontask.h

@@ -20,7 +20,7 @@ std::string vector_to_string(const std::vector<std::string>& vec);
 
 // log entry serialization
 bool serialize_log(const LogEntry& log, std::string& output);
-bool deserialize_log(const std::string& input, LogEntry& log);
+bool deserialize_log(const std::string& input, LogEntry* log);
 
 } // namespace raft
 

@@ -51,8 +51,8 @@ bool serialize_log(const LogEntry& log, std::string& output) {
     return ret;
 }
 
-bool deserialize_log(const std::string& input, LogEntry& log) {
-    bool ret = log.ParseFromString(input);
+bool deserialize_log(const std::string& input, LogEntry* log) {
+    bool ret = log->ParseFromString(input);
     if (!ret) {
         PLOGE << "Failed to deserialize log entry: " << input << ".";
     }

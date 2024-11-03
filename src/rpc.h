@@ -32,10 +32,10 @@ public:
 
     // rpc frontend api
     void request_vote(const std::string& peer, 
-                    const uint64_t term, 
+                    const int64_t term, 
                     client_rv_t callback);
     void append_entries(const std::string& peer,
-                    const uint64_t term,
+                    const int64_t term,
                     client_ae_t callback);
 
 private:

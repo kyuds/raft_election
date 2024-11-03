@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <plog/Log.h>
 #include "utils.h"
+#include "sqlcmd.h"
 
 #define RAFT_SQL_DB "raftsql.db"
 #define RAFT_METADATA_TERM "term"
@@ -21,14 +22,8 @@ Storage::Storage(const std::string& dir) {
     }
 
     // create tables
-    int rc;
-    char * err_msg = nullptr;
-    rc = sqlite3_exec(db, CREATE_METADATA_CMD, nullptr, nullptr, &err_msg);
-    if (rc != SQLITE_OK) {
-        PLOGE << "Error creating table: " << err_msg << ".";
-        sqlite3_free(err_msg);
-        throw std::runtime_error("Unable to create metadata table.");
-    }
+    create_table(CREATE_METADATA_CMD);
+    create_table(CREATE_LOG_CMD);
 
     // initialize all statements
     add_statement(PUT_METADATA, PUT_METADATA_CMD);
@@ -39,6 +34,8 @@ Storage::~Storage() {
         sqlite3_finalize(pair.second);
     if (db) sqlite3_close(db);
 }
+
+// persistent state
 
 bool Storage::save_state() {
     // get sqlite3 statement
@@ -127,7 +124,14 @@ void Storage::load_state() {
 
     // finalize statement:
     sqlite3_finalize(stmt);
+
+    // get start, end indicies and latest log entry
+    initialize_log_data();
 }
+
+// log entries
+
+
 
 // helpers
 
@@ -159,6 +163,53 @@ bool Storage::get_metadata(sqlite3_stmt* stmt, const char* n, std::string& o) {
         throw std::runtime_error("Error executing sql statement");
     }
     return false;
+}
+
+void Storage::create_table(const char * cmd) {
+    int rc;
+    char * err_msg = nullptr;
+    rc = sqlite3_exec(db, cmd, nullptr, nullptr, &err_msg);
+    if (rc != SQLITE_OK) {
+        PLOGE << "Error creating table: " << err_msg << ".";
+        sqlite3_free(err_msg);
+        throw std::runtime_error("Unable to create SQLite3 table.");
+    }
+}
+
+void Storage::initialize_log_data() {
+    int rc;
+    sqlite3_stmt * stmt;
+
+    // start, end indicies
+    if (sqlite3_prepare_v2(db, MIN_MAX_LOG_CMD, -1, &stmt, nullptr) != SQLITE_OK) {
+        PLOGE << "Failed to prepare statement: " << sqlite3_errmsg(db) << ";"
+              << " on command: " << MIN_MAX_LOG_CMD << ".";
+        throw std::runtime_error("Unable to create SQLite statement");
+    }
+    rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW) {
+        start_index = sqlite3_column_int64(stmt, 0);
+        next_index = sqlite3_column_int64(stmt, 1) + 1; // next available
+    }
+    sqlite3_finalize(stmt);
+
+    // last log entry
+    if (sqlite3_prepare_v2(db, LATEST_LOG_CMD, -1, &stmt, nullptr) != SQLITE_OK) {
+        PLOGE << "Failed to prepare statement: " << sqlite3_errmsg(db) << ";"
+              << " on command: " << LATEST_LOG_CMD << ".";
+        throw std::runtime_error("Unable to create SQLite statement");
+    }
+    rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW) {
+        const unsigned char * raw = sqlite3_column_text(stmt, 0);
+        if (raw) {
+            const char * cast = reinterpret_cast<const char *>(raw);
+            if (!deserialize_log(cast, last_entry)) {
+                throw std::runtime_error("Unable to deserialize entry");
+            }
+        }
+    }
+    sqlite3_finalize(stmt);
 }
 
 } // namespace raft

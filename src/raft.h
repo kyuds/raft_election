@@ -45,8 +45,8 @@ public:
 // helper functions for Raft
 private:
 //     // processors for RPC requests
-    rep_t process_vote_request(uint64_t term, const std::string& candidate);
-    rep_t process_append_entries(uint64_t term, const std::string& leader);
+    rep_t process_vote_request(int64_t term, const std::string& candidate);
+    rep_t process_append_entries(int64_t term, const std::string& leader);
 
     // tasks
     void handle_election_task();
@@ -54,7 +54,7 @@ private:
     void start_tasks();
 
     // helpers
-    void update_term(uint64_t term);
+    void update_term(int64_t term);
     void become_leader();
 
 // member variables

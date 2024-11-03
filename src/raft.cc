@@ -29,10 +29,10 @@ void Raft::start() {
     status = Status::Follower;
     storage->load_state();
     rpc->start(
-        [this] (uint64_t term, const std::string& address) {
+        [this] (int64_t term, const std::string& address) {
             return process_vote_request(term, address);
         },
-        [this] (uint64_t term, const std::string& address) {
+        [this] (int64_t term, const std::string& address) {
             return process_append_entries(term, address);
         }
     );
@@ -54,7 +54,7 @@ void Raft::stop() {
 }
 
 // RPC request processors
-rep_t Raft::process_vote_request(uint64_t term, const std::string& candidate) {
+rep_t Raft::process_vote_request(int64_t term, const std::string& candidate) {
     std::lock_guard<std::mutex> lock(raft_mutex);
     update_term(term);
 
@@ -74,7 +74,7 @@ rep_t Raft::process_vote_request(uint64_t term, const std::string& candidate) {
     };
 }
 
-rep_t Raft::process_append_entries(uint64_t term, const std::string& leader) {
+rep_t Raft::process_append_entries(int64_t term, const std::string& leader) {
     std::lock_guard<std::mutex> lock(raft_mutex);
     update_term(term);
     if (this->leader != leader) {
@@ -102,7 +102,7 @@ void Raft::handle_election_task() {
     for (const auto& peer: peers) {
         if (peer == address) continue;
         rpc->request_vote(peer, storage->term(),
-            [this, &peer] (uint64_t term, bool granted) {
+            [this, &peer] (int64_t term, bool granted) {
                 std::lock_guard<std::mutex> lock(raft_mutex);
                 update_term(term);
                 if (status != Status::Candidate) return;
@@ -129,7 +129,7 @@ void Raft::handle_heartbeat_task() {
     for (const auto& peer : peers) {
         if (peer == address) continue;
         rpc->append_entries(peer, storage->term(),
-            [this, &peer] (uint64_t term, bool success) {
+            [this, &peer] (int64_t term, bool success) {
                 std::lock_guard<std::mutex> lock(raft_mutex);
                 update_term(term);
                 if (status != Status::Leader) return;
@@ -178,7 +178,7 @@ void Raft::start_tasks() {
 }
 
 // helpers
-void Raft::update_term(uint64_t term) {
+void Raft::update_term(int64_t term) {
     if (storage->term() < term) {
         PLOGI << "Found higher term " << term 
               << " than current term " << storage->term() << ". "
