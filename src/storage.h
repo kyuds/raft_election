@@ -19,7 +19,7 @@ public:
     ~Storage();
 
 public:  // raft state
-    bool save_state();
+    void save_state();
     void load_state();
 
     int64_t term() { return _term; }
@@ -34,19 +34,21 @@ private: // raft state
     std::string _voted_for;
 
 public:  // raft logs
-    int64_t get_available_index() { return next_index; }
+    int64_t get_next_index() { return next_index; }
     int64_t get_start_index() { return start_index; }
     LogEntry * get_last_entry() { return last_entry; }
 
     int64_t append_log(const LogEntry& log);
     void write_log(int64_t index, const LogEntry& log);
-    std::vector<LogEntry*> get_logs(int64_t start, int64_t end);
+    std::vector<LogEntry*> get_logs(int64_t start, int64_t end); // ] exclusive
     LogEntry * get_log(int64_t index);
 
 private: // raft logs
+    bool append_log_internal(const LogEntry& log);
+
     int64_t start_index = 1;
     int64_t next_index = 1;
-    LogEntry * last_entry = nullptr;
+    LogEntry * last_entry;
 
 private: // db
     sqlite3 * db;
@@ -54,6 +56,7 @@ private: // db
 
 private: // helpers
     void add_statement(const char* name, const char* command);
+    sqlite3_stmt* get_statement(const char * name);
     bool get_metadata(sqlite3_stmt* stmt, const char* n, std::string& o);
     void create_table(const char * cmd);
     void initialize_log_data();

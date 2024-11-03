@@ -43,8 +43,8 @@ std::string vector_to_string(const std::vector<std::string>& vec) {
     return oss.str();
 }
 
-bool serialize_log(const LogEntry& log, std::string& output) {
-    bool ret = log.SerializeToString(&output);
+bool serialize_log(const LogEntry& log, std::string* output) {
+    bool ret = log.SerializeToString(output);
     if (!ret) {
         PLOGE << "Failed to serialize log entry.";
     }

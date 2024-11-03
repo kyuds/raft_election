@@ -1,18 +1,26 @@
 #include <iostream>
 #include <thread>
 
+#include <plog/Log.h>
+#include "plog/Initializers/RollingFileInitializer.h"
 #include "config.h"
+#include "storage.h"
 #include "raft.h"
+#include "utils.h"
+#include "log.pb.h"
 
 using Config = raft::Config;
 using Raft = raft::Raft;
+using Storage = raft::Storage;
+using LogEntry = raft::LogEntry;
 
 void test_config(int argc, char ** argv);
 void test_raft_node(int argc, char ** argv);
 void run_election_cli(int argc, char ** argv);
+void test_storage(int argc, char ** argv);
 
 int main(int argc, char ** argv) {
-    run_election_cli(argc, argv);
+    test_storage(argc, argv);
     return 0;
 }
 
@@ -45,4 +53,29 @@ void run_election_cli(int argc, char ** argv) {
     while (true) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10000));
     }
+}
+
+/*
+build/bin/raft tmp
+*/
+void test_storage(int argc, char ** argv) {
+    plog::init(plog::info, 
+               raft::combine_paths(argv[1], "log.txt").c_str(), 
+               1000000, 5);
+    Storage * storage = new Storage(argv[1]);
+    storage->load_state();
+
+    std::cout << "term: " << storage->term() << " voted_for: (" << storage->voted_for() << ")" << std::endl;
+    std::cout << "start: " << storage->get_start_index() << " next: " << storage->get_next_index() << std::endl;
+
+    storage->inc_term();
+    storage->save_state();
+
+    assert(storage->get_log(1000) == nullptr);
+    std::cout << "asserted non-existent log returns null." << std::endl;
+
+    LogEntry entry;
+    entry.set_term(storage->get_next_index());
+    entry.set_value("hello");
+    std::cout << storage->append_log(entry) << std::endl;
 }

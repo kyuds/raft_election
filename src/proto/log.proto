@@ -8,7 +8,6 @@ serialization is also very straightforward. Refer to utils.h for serialization.
 */
 
 message LogEntry {
-    int64 index = 1;
-    int64 term = 2;
-    bytes value = 3;
+    int64 term = 1;
+    bytes value = 2;
 }

@@ -2,7 +2,6 @@
 #include "plog/Initializers/RollingFileInitializer.h"
 
 #include "raft.h"
-#include "storage.h"
 
 namespace raft {
 
@@ -95,7 +94,7 @@ void Raft::handle_election_task() {
     votes = 1;
     storage->inc_term();
     storage->set_voted_for(address);
-    storage->save_state(); // Need to check for db failure.
+    storage->save_state();
     election_task->reset();
     PLOGI << "Timeout: Starting election for term: " << storage->term() << ".";
 
