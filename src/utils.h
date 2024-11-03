@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "log.pb.h"
+
 namespace raft {
 
 // Filesystem
@@ -15,6 +17,10 @@ std::vector<std::string> get_lines(const std::string& f);
 
 // vectors (for peers)
 std::string vector_to_string(const std::vector<std::string>& vec);
+
+// log entry serialization
+bool serialize_log(const LogEntry& log, std::string& output);
+bool deserialize_log(const std::string& input, LogEntry& log);
 
 } // namespace raft
 

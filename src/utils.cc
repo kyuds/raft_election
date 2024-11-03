@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <plog/Log.h>
 
 #include "utils.h"
 
@@ -40,6 +41,22 @@ std::string vector_to_string(const std::vector<std::string>& vec) {
     }
     oss << "]";
     return oss.str();
+}
+
+bool serialize_log(const LogEntry& log, std::string& output) {
+    bool ret = log.SerializeToString(&output);
+    if (!ret) {
+        PLOGE << "Failed to serialize log entry.";
+    }
+    return ret;
+}
+
+bool deserialize_log(const std::string& input, LogEntry& log) {
+    bool ret = log.ParseFromString(input);
+    if (!ret) {
+        PLOGE << "Failed to deserialize log entry: " << input << ".";
+    }
+    return ret;
 }
 
 } // namespace raft

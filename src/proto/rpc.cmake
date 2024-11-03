@@ -9,6 +9,7 @@ find_package(Threads REQUIRED)
 # proto files to compile (no extensions)
 set(PROTO_SERVICES
     raft
+    log
     # add more proto file names (eg: raft.proto -> raft)
 )
 
