@@ -307,6 +307,7 @@ void Storage::initialize_log_data() {
     sqlite3_finalize(stmt);
 
     // last log entry
+    last_entry = new LogEntry();
     if (sqlite3_prepare_v2(db, LATEST_LOG_CMD, -1, &stmt, nullptr) != SQLITE_OK) {
         PLOGE << "Failed to prepare statement: " << sqlite3_errmsg(db) << ";"
               << " on command: " << LATEST_LOG_CMD << ".";
