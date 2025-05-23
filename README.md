@@ -1,4 +1,7 @@
 # raft
+
+I am no longer working on this, as I didn't have enough time after implementing log storage and raft leader elections. Leader election works though. 
+
 [Raft](https://raft.github.io/raft.pdf) Distributed Consensus in C++
 
 Features:
